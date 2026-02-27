@@ -3,3 +3,7 @@
 export GOOGLE_CLOUD_PROJECT="pr-tftest"
 
 -- Log into the Git. 
+
+git add .
+git commit -m "Your descriptive commit message here"
+git push origin main

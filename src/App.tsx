@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { Connection, PublicKey, clusterApiUrl, LAMPORTS_PER_SOL } from '@solana/web3.js';
 import logo from './assets/Logo.png';
 import {
     Activity,
@@ -34,11 +35,14 @@ interface ScadaData {
 }
 
 interface InventoryItem {
-    model: string;
+    id: number;
+    model_compatibility: string;
     part_number: string;
     description: string;
     stock_level: number;
     lead_time_days: number;
+    warehouse_id: string;
+    status?: "Low Stock" | "Available"; // Add status for frontend display
 }
 
 interface PipelineNode {
@@ -64,11 +68,6 @@ const INITIAL_PIPELINE_NODES: PipelineNode[] = [
     { id: "COMP-TX-VALLEY-03", name: "NODE 03", current: 100, max: 125, role: "Backup", status: "Active" }
 ];
 
-const SAP_INVENTORY: InventoryItem[] = [
-    { model: "High-Flow Centrifugal", part_number: "GASK-9921-X", description: "Compressor Valve Gasket Kit", stock_level: 12, lead_time_days: 0 },
-    { model: "High-Flow Centrifugal", part_number: "SEAL-HT-44", description: "High-Temp Main Shaft Seal", stock_level: 4, lead_time_days: 2 },
-    { model: "High-Flow Centrifugal", part_number: "LUBE-SYN-Q", description: "Synthetic Lubricant (5 Gal)", stock_level: 25, lead_time_days: 0 }
-];
 
 // --- COMPONENTS ---
 
@@ -107,6 +106,15 @@ const App = () => {
     const [workflowStep, setWorkflowStep] = useState(0);
     const [logs, setLogs] = useState<string[]>([]);
     const [nodes, setNodes] = useState<PipelineNode[]>(INITIAL_PIPELINE_NODES);
+    const [inventory, setInventory] = useState<InventoryItem[]>([]);
+
+    useEffect(() => {
+        const connection = new Connection(clusterApiUrl('devnet'), 'confirmed');
+        const address = new PublicKey('6c5yNnYHj38Q7m5o43RjY7eX8zW1hL8KxZ2b7c4g5m6'); // Replace with a valid Solana address
+        connection.getBalance(address).then(balance => {
+            console.log(`Balance: ${balance / LAMPORTS_PER_SOL} SOL`);
+        });
+    }, []);
 
     // Simulation Logic
     const simulateAnomaly = () => {
@@ -149,6 +157,24 @@ const App = () => {
             },
             () => {
                 addLog("[Agent B] Verify Stock: Part confirmed in Warehouse TX-S-04.");
+                // Trigger backend PATCH request to decrement stock
+                fetch('http://localhost:3001/api/inventory/GASK-9921-X', {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ quantity: -1 }) // Decrement stock by 1
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.newStockLevel !== undefined) {
+                        setInventory(prev => prev.map(item =>
+                            item.part_number === 'GASK-9921-X' ? { ...item, stock_level: data.newStockLevel, status: data.newStockLevel < 5 ? 'Low Stock' : 'Available' } : item
+                        ));
+                        addLog(`[Agent B] Stock for GASK-9921-X decremented. New stock: ${data.newStockLevel}`);
+                    } else if (data.error) {
+                        addLog(`[Agent B] Error decrementing stock: ${data.error}`);
+                    }
+                })
+                .catch(error => addLog(`[Agent B] Network error decrementing stock: ${error.message}`));
                 setWorkflowStep(4);
             },
             () => {
@@ -337,7 +363,28 @@ const App = () => {
                                     <h2 className="text-3xl font-black text-white tracking-tight mb-1">SAP Mock Inventory Lookup</h2>
                                     <p className="text-zinc-500 text-sm font-medium">Critical Spares & Maintenance Assets</p>
                                 </div>
-                                <button className="flex items-center gap-2 bg-orange-600 hover:bg-orange-500 text-black px-6 py-2.5 rounded-xl text-xs font-black transition-all shadow-lg shadow-orange-900/20 active:scale-95 uppercase tracking-widest">
+                                <button
+                                    onClick={() => {
+                                        fetch('http://localhost:3001/api/orders', {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({ part_number: 'GASK-9921-X', quantity: 10 }) // Example: Order 10 units of GASK-9921-X
+                                        })
+                                        .then(response => response.json())
+                                        .then(data => {
+                                            if (data.newStockLevel !== undefined) {
+                                                setInventory(prev => prev.map(item =>
+                                                    item.part_number === 'GASK-9921-X' ? { ...item, stock_level: data.newStockLevel, status: data.newStockLevel < 5 ? 'Low Stock' : 'Available' } : item
+                                                ));
+                                                addLog(`[Agent B] Ordered 10 units of GASK-9921-X. New stock: ${data.newStockLevel}`);
+                                            } else if (data.error) {
+                                                addLog(`[Agent B] Error ordering parts: ${data.error}`);
+                                            }
+                                        })
+                                        .catch(error => addLog(`[Agent B] Network error ordering parts: ${error.message}`));
+                                    }}
+                                    className="flex items-center gap-2 bg-orange-600 hover:bg-orange-500 text-black px-6 py-2.5 rounded-xl text-xs font-black transition-all shadow-lg shadow-orange-900/20 active:scale-95 uppercase tracking-widest"
+                                >
                                     <Plus size={16} /> Order Parts
                                 </button>
                             </div>
@@ -362,16 +409,16 @@ const App = () => {
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-zinc-800/50">
-                                        {SAP_INVENTORY.map((item, idx) => (
+                                        {inventory.map((item, idx) => (
                                             <tr key={idx} className="hover:bg-zinc-800/30 transition-colors">
-                                                <td className="px-8 py-4 font-bold text-white">{item.model}</td>
+                                                <td className="px-8 py-4 font-bold text-white">{item.model_compatibility}</td>
                                                 <td className="px-8 py-4 font-mono text-xs text-orange-500">{item.part_number}</td>
                                                 <td className="px-8 py-4 text-zinc-400">{item.description}</td>
                                                 <td className="px-8 py-4 font-black text-white text-center">{item.stock_level}</td>
                                                 <td className="px-8 py-4 text-zinc-500">{item.lead_time_days === 0 ? 'Immediate' : `${item.lead_time_days} days`}</td>
                                                 <td className="px-8 py-4 text-right">
-                                                    <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase border ${item.stock_level > 5 ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border-amber-500/20'}`}>
-                                                        {item.stock_level > 5 ? 'Available' : 'Low Stock'}
+                                                    <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase border ${item.status === 'Available' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border-amber-500/20'}`}>
+                                                        {item.status}
                                                     </span>
                                                 </td>
                                             </tr>
