@@ -1,5 +1,3 @@
-
-
 # Changelog
 
 This document logs the changes made to the Asset Velocity application.
@@ -110,5 +108,10 @@ Throughout this process, I aimed to be methodical, addressing one issue at a tim
 - **Reasoning:** The build was failing due to type errors, which blocked the initial deployment. A type-safe codebase is also more maintainable and less prone to runtime errors.
 - **Impact:** The application can now be successfully compiled and built, enabling deployment and further development.
 - **Verification:** The `gcloud builds submit` command completed successfully after these fixes were applied.
+## [Unreleased]
+### Added
+- Implemented SAP inventory service with Node.js and SQLite backend. This includes API endpoints for fetching, updating, and ordering inventory items, replacing hardcoded data with a persistent and dynamic solution.
 
-
+## [1.0.0] - 2026-02-27
+### Added
+- Initial project setup.
