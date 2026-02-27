@@ -1,0 +1,5 @@
+
+-- Set the proejct. 
+export GOOGLE_CLOUD_PROJECT="pr-tftest"
+
+-- Log into the Git. 
