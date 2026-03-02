@@ -1,0 +1,265 @@
+import React from 'react';
+import { ScadaData, PipelineNode, InventoryItem } from '@src/types';
+import {
+    Zap,
+    GitBranch,
+    CheckCircle,
+    ArrowRight,
+    Package,
+    Layers,
+    Play
+} from 'lucide-react';
+import { updateInventory } from '@src/services/api';
+
+interface WorkflowViewProps {
+    activeWorkflow: ScadaData | null;
+    workflowStep: number;
+    logs: string[];
+    completeMaintenance: () => void;
+    setNodes: React.Dispatch<React.SetStateAction<PipelineNode[]>>;
+    // INITIAL_PIPELINE_NODES: PipelineNode[]; // Removed
+    setInventory: React.Dispatch<React.SetStateAction<InventoryItem[]>>;
+    addLog: (msg: string) => void;
+    setWorkflowStep: React.Dispatch<React.SetStateAction<number>>;
+    // setActiveTab: React.Dispatch<React.SetStateAction<string>>; // Removed
+}
+
+const WorkflowView: React.FC<WorkflowViewProps> = ({
+    activeWorkflow,
+    workflowStep,
+    logs,
+    completeMaintenance,
+    setNodes,
+    // INITIAL_PIPELINE_NODES, // Removed
+    setInventory,
+    addLog,
+    setWorkflowStep,
+    // setActiveTab // Removed
+}) => {
+    // Moved the steps logic here from App.tsx
+    const nextStepLocal = () => {
+        const steps = [
+            () => {
+                addLog("[Agent B] Event received. Metadata validation complete.");
+                setWorkflowStep(2);
+            },
+            () => {
+                addLog("[Agent B] SAP Inventory Lookup: GASK-9921-X identified.");
+                setWorkflowStep(3);
+            },
+            async () => { // Make this step async
+                addLog("[Agent B] Verify Stock: Part confirmed in Warehouse TX-S-04.");
+                try {
+                    const data = await updateInventory('GASK-9921-X', -1); // Use the API function
+                    if (data.newStockLevel !== undefined) {
+                        setInventory(prev => prev.map(item =>
+                            item.part_number === 'GASK-9921-X' ? { ...item, stock_level: data.newStockLevel, status: data.newStockLevel < 5 ? 'Low Stock' : 'Available' } : item
+                        ));
+                        addLog(`[Agent B] Stock for GASK-9921-X decremented. New stock: ${data.newStockLevel}`);
+                    }
+                } catch (error: any) {
+                    addLog(`[Agent B] Network error decrementing stock: ${error.message}`);
+                }
+                setWorkflowStep(4);
+            },
+            () => {
+                addLog("[Agent B] Load Balancing Optimization: Recalculating flow distribution.");
+                setNodes(prev => prev.map(n => {
+                    if (n.id === "COMP-TX-VALLEY-01") return { ...n, current: 0, status: "Maintenance" };
+                    return { ...n, current: n.current + 8.5, status: "Active (Boosted)" };
+                }));
+                setWorkflowStep(5);
+            },
+            () => {
+                addLog("[Agent B] Orchestration & Notify: Dispatched alerts to operations.");
+                setWorkflowStep(6);
+            },
+            () => {
+                addLog("[Agent B] Execution Phase: Field team performing valve replacement.");
+                setWorkflowStep(7);
+            },
+            () => {
+                addLog("[Agent B] Safety & QA Closure: Awaiting digital signature...");
+                setWorkflowStep(8);
+            }
+        ];
+        if (steps[workflowStep - 1]) steps[workflowStep - 1]();
+    };
+
+    return (
+        <div className="flex flex-col h-full gap-8 animate-in slide-in-from-bottom-4 duration-500">
+            <div className="flex justify-between items-end">
+                <div>
+                    <h2 className="text-3xl font-black text-white tracking-tight mb-1">Automated Maintenance Lifecycle</h2>
+                    <p className="text-zinc-500 text-sm font-medium">Active Instance: <span className="text-orange-500 font-bold uppercase tracking-wider">{activeWorkflow?.asset_id || 'COMP-TX-VALLEY-01'}</span></p>
+                </div>
+                <div className="bg-blue-600/10 text-blue-400 text-[10px] font-black px-4 py-1.5 rounded-full border border-blue-500/20 flex items-center gap-2 uppercase tracking-widest">
+                    <Zap size={14} fill="currentColor" /> Agent B Active
+                </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 flex-1 overflow-hidden">
+                {/* Workflow Timeline */}
+                <div className="bg-[#1c1a16] border border-zinc-800/50 rounded-3xl p-10 flex flex-col overflow-hidden">
+                    <h3 className="text-[10px] font-black text-zinc-500 uppercase tracking-widest flex items-center gap-2 mb-10">
+                        <GitBranch size={16} className="text-orange-500" /> Workflow Timeline
+                    </h3>
+                    <div className="flex-1 space-y-12 relative overflow-y-auto pr-4 custom-scrollbar">
+                        <div className="absolute left-[17px] top-2 bottom-2 w-0.5 bg-zinc-800/50"></div>
+
+                        {[
+                            { id: 1, title: 'Event Received', desc: 'Vibration spike detected at 04:12 UTC' },
+                            { id: 2, title: 'SAP Inventory Lookup', desc: 'GASK-9921-X Found in Region 4' },
+                            { id: 3, title: 'Verify Stock', desc: '14 units available in TX-S-04' },
+                            { id: 4, title: 'Load Balancing Optimization', desc: 'Recalculating flow distribution...' },
+                            { id: 5, title: 'Orchestration & Notify', desc: 'Alerts dispatched to Ops and Field Teams' },
+                            { id: 6, title: 'Execution Phase', desc: 'Replacement in progress (Est. 42 min)' },
+                            { id: 7, title: 'Safety & QA Closure', desc: 'Awaiting digital signature' },
+                        ].map((step) => (
+                            <div key={step.id} className="flex gap-8 relative z-10">
+                                <div className={`w-9 h-9 rounded-full flex items-center justify-center transition-all shadow-lg ${workflowStep >= step.id ? 'bg-emerald-500 text-black shadow-emerald-900/20' : step.id === workflowStep + 1 ? 'bg-orange-500 text-black animate-pulse' : 'bg-zinc-900 text-zinc-600 border border-zinc-800'}`}>
+                                    {workflowStep >= step.id ? <CheckCircle size={18} /> : step.id}
+                                </div>
+                                <div className="flex-1 pt-1">
+                                    <h4 className={`text-base font-black tracking-tight ${workflowStep >= step.id ? 'text-white' : 'text-zinc-600'}`}>{step.title}</h4>
+                                    <p className={`text-xs mt-1 font-medium ${workflowStep >= step.id ? 'text-zinc-500' : 'text-zinc-700'}`}>{step.desc}</p>
+                                    
+                                    {/* Contextual Action Buttons */}
+                                    {step.id === workflowStep + 1 && workflowStep < 7 && (
+                                        <button onClick={nextStepLocal} className="mt-4 bg-orange-600 hover:bg-orange-500 text-black px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-orange-900/20 flex items-center gap-2">
+                                            Proceed to next step <ArrowRight size={12} />
+                                        </button>
+                                    )}
+                                    {step.id === 7 && workflowStep === 7 && (
+                                        <button onClick={completeMaintenance} className="mt-4 bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-emerald-900/20 flex items-center gap-2">
+                                            Finalize Maintenance <CheckCircle size={12} />
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                    <div className="mt-8 pt-8 border-t border-zinc-800/50">
+                        <h4 className="text-[9px] font-black text-zinc-600 uppercase tracking-widest mb-4">Live Agent Event Logs</h4>
+                        <div className="h-32 overflow-y-auto space-y-2 pr-2 custom-scrollbar font-mono text-[10px]">
+                            {logs.length === 0 ? (
+                                <p className="text-zinc-700 italic">No agent activity logged.</p>
+                            ) : (
+                                logs.map((log, i) => (
+                                    <div key={i} className="text-zinc-500 border-l border-zinc-800 pl-3 py-0.5">
+                                        {log}
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Right Side Panels */}
+                <div className="flex flex-col gap-8">
+                    <div className="bg-[#1c1a16] border border-zinc-800/50 rounded-3xl p-8">
+                        <div className="flex justify-between items-center mb-8">
+                            <h3 className="text-[10px] font-black text-zinc-500 uppercase tracking-widest flex items-center gap-2">
+                                <Package size={16} className="text-orange-500" /> SAP Inventory Detail
+                            </h3>
+                            <span className="bg-emerald-500/10 text-emerald-500 text-[9px] font-black px-2 py-0.5 rounded border border-emerald-500/20 uppercase tracking-widest">Stock Confirmed</span>
+                        </div>
+                        <div className="flex gap-8">
+                            <div className="w-24 h-24 bg-zinc-900/50 border border-zinc-800 rounded-2xl flex items-center justify-center">
+                                <Layers size={44} className="text-zinc-700" />
+                            </div>
+                            <div className="flex-1 grid grid-cols-2 gap-x-12 gap-y-6">
+                                <div>
+                                    <p className="text-zinc-600 text-[9px] font-black uppercase tracking-widest mb-1">Part Name</p>
+                                    <p className="text-sm font-bold text-white tracking-tight">Compressor Gasket</p>
+                                </div>
+                                <div>
+                                    <p className="text-[9px] font-black text-zinc-600 uppercase tracking-widest mb-1">SKUID</p>
+                                    <p className="text-sm font-bold text-white tracking-tight">GASK-9921-X</p>
+                                </div>
+                                <div>
+                                    <p className="text-[9px] font-black text-zinc-600 uppercase tracking-widest mb-1">Stock Level</p>
+                                    <p className="text-sm font-black text-emerald-500 tracking-tight">14 Units</p>
+                                </div>
+                                <div>
+                                    <p className="text-[9px] font-black text-zinc-600 uppercase tracking-widest mb-1">Warehouse</p>
+                                    <p className="text-sm font-bold text-white tracking-tight">TX-S-04</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="bg-[#1c1a16] border border-zinc-800/50 rounded-3xl p-8 relative flex-1">
+                        <div className="flex justify-between items-center mb-8">
+                            <h3 className="text-[10px] font-black text-zinc-500 uppercase tracking-widest flex items-center gap-2">
+                                <GitBranch size={16} className="text-orange-500" /> Load Balancing Preview
+                            </h3>
+                            <span className="text-[9px] font-bold text-zinc-600 uppercase tracking-tighter">Simulation Mode: Real-time Re-route</span>
+                        </div>
+
+                        <div className="flex-1 flex flex-col justify-center items-center py-4">
+                            <div className="relative w-full h-40">
+                                <svg className="w-full h-full overflow-visible" viewBox="0 0 400 200">
+                                    <line x1="100" y1="100" x2="200" y2="50" stroke={workflowStep === 8 ? "#10b981" : "#333"} strokeWidth="1.5" strokeDasharray={workflowStep === 8 ? "0" : "5"} />
+                                    <line x1="100" y1="100" x2="200" y2="150" stroke={workflowStep === 8 ? "#10b981" : "#333"} strokeWidth="1.5" strokeDasharray={workflowStep === 8 ? "0" : "5"} />
+                                    <line x1="200" y1="50" x2="300" y2="100" stroke={workflowStep === 8 ? "#10b981" : "#2563eb"} strokeWidth="3" />
+                                    <line x1="200" y1="150" x2="300" y2="100" stroke="#10b981" strokeWidth="3" />
+
+                                    {/* VALLEY-01 (Faulty -> Healthy) */}
+                                    <rect x="85" y="85" width="30" height="30" rx="6" fill={workflowStep === 8 ? "#10b981" : "#ef4444"} className={workflowStep === 8 ? "" : "animate-pulse"} />
+                                    {workflowStep === 8 ? (
+                                        <CheckCircle x="92" y="92" size={16} className="text-white" />
+                                    ) : (
+                                        <path d="M92 92 L108 108 M108 92 L92 108" stroke="white" strokeWidth="2" />
+                                    )}
+
+                                    {/* VALLEY-02 (Compensating -> Healthy) */}
+                                    <rect x="185" y="35" width="30" height="30" rx="6" fill={workflowStep === 8 ? "#10b981" : "#2563eb"} />
+                                    {workflowStep === 8 ? <CheckCircle x="192" y="42" size={16} className="text-white" /> : <Zap x="192" y="42" size={16} className="text-white" />}
+
+                                    {/* VALLEY-03 (Compensating -> Healthy) */}
+                                    <rect x="185" y="135" width="30" height="30" rx="6" fill="#10b981" />
+                                    {workflowStep === 8 ? <CheckCircle x="192" y="142" size={16} className="text-white" /> : <Zap x="192" y="142" size={16} className="text-white" />}
+
+                                    {/* Destination HUB */}
+                                    <circle cx="310" cy="100" r="15" fill={workflowStep === 8 ? "#10b981" : "#333"} />
+                                    <Play x="303" y="93" size={14} className={workflowStep === 8 ? "text-white" : "text-zinc-500"} />
+                                </svg>
+
+                                {/* Labels */}
+                                <div className="absolute top-[45%] left-[5%] text-center">
+                                    <p className="text-[10px] font-black text-white">VALLEY-01</p>
+                                    <p className={`text-[9px] font-black uppercase tracking-tighter ${workflowStep === 8 ? "text-emerald-500" : "text-red-500"}`}>
+                                        {workflowStep === 8 ? "100% HEALTHY" : "-94% LOAD"}
+                                    </p>
+                                </div>
+                                <div className="absolute top-[10%] left-[55%] text-left">
+                                    <p className="text-[10px] font-black text-white">VALLEY-02</p>
+                                    <span className={`text-[8px] px-1.5 py-0.5 rounded font-black uppercase tracking-tighter shadow-lg ${workflowStep === 8 ? "bg-emerald-500 text-white" : "bg-blue-600 text-white shadow-blue-600/30"}`}>
+                                        {workflowStep === 8 ? "OPTIMAL" : "8.5% INCREASE"}
+                                    </span>
+                                </div>
+                                <div className="absolute top-[75%] left-[55%] text-left">
+                                    <p className="text-[10px] font-black text-white">VALLEY-03</p>
+                                    <span className={`text-[8px] px-1.5 py-0.5 rounded font-black uppercase tracking-tighter shadow-lg ${workflowStep === 8 ? "bg-emerald-500 text-white" : "bg-emerald-500 text-white shadow-emerald-600/30"}`}>
+                                        {workflowStep === 8 ? "OPTIMAL" : "+8.5% INCREASE"}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="mt-8 pt-6 border-t border-zinc-800/50 flex justify-between items-center">
+                            <div className="flex items-center gap-3">
+                                <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></div>
+                                <p className="text-[10px] font-bold text-zinc-600 uppercase italic tracking-tighter">Agent B is calculating optimal flow for TX Grid Section 04...</p>
+                            </div>
+                            <button className="text-[10px] font-black text-orange-500 uppercase tracking-widest hover:text-orange-400 transition-colors">View Full Schematic</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default WorkflowView;

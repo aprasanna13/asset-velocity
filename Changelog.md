@@ -33,11 +33,26 @@ Here's a breakdown of my thought process for each major change:
     *   I updated the SVG visualizations to be reactive. Now, once maintenance is finalized, the system state dynamically transitions from alert (red/blue) to optimal (green) across all screens simultaneously.
     *   Finally, I verified the integrity of the build and successfully deployed the redesigned artifact to the project's production environment.
 
+6. **Single-Port React & Node.js Integration (Session Mar 02):**
+    *   The goal was to eliminate CORS and 302 redirect issues in GCP Cloud Workstations by serving the React frontend directly from the Node.js server on a single port (3001).
+    *   I refactored `server.js` to serve the `dist` directory and added a catch-all middleware to support client-side routing. I encountered a `path-to-regexp` error with the `*` wildcard in Express 5, which I resolved by using an anonymous `app.use` middleware that serves `index.html` for all non-API requests.
+    *   On the frontend, I transitioned API calls in `src/services/api.ts` to relative paths and updated the Vite configuration to proxy requests to `localhost:3001` during development.
+    *   I streamlined the project by removing the `cors` package and added a `deploy` script to automate the build and start process.
+
 Throughout this process, I aimed to be methodical, addressing one issue at a time and verifying each change before moving on to the next.
 
 ---
 
 ### Change History
+
+**Timestamp:** 2026-03-02 14:15:00
+- **Change Type:** Refactor
+- **Description:** Integrated React frontend and Node.js backend into a single-port deployment on Port 3001. Removed `cors` dependency, updated API calls to relative paths, and implemented SPA-compatible routing in Express.
+- **Reasoning:** To eliminate CORS errors and Google Identity Proxy (302 redirect) issues in GCP Cloud Workstations environment.
+- **Impact:** Simplified deployment architecture, improved security by using a single origin, and ensured seamless routing for React Router.
+- **Verification:** Verified build process with `npm run build` and confirmed server functionality on Port 3001 with `curl`.
+
+---
 
 **Timestamp:** 2026-02-27 04:15:00
 - **Change Type:** Feature

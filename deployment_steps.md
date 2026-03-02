@@ -7,3 +7,5 @@ Once you are authenticated, you can deploy the application to Cloud Run by runni
 ```bash
 gcloud run deploy assetvol --image gcr.io/pr-tftest/assetvol:latest --region us-central1 --platform managed --port 3000 --allow-unauthenticated
 ```
+
+Artifact Registry / Project: pr-tftest / Location: us-central1 / Repository: asset-vol-repo

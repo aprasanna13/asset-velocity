@@ -13,14 +13,11 @@ RUN npm install
 # Copy the rest of the application code
 COPY . .
 
-# Build the application
+# Build the frontend
 RUN npm run build
 
-# Install serve to run the production server
-RUN npm install -g serve
+# Expose the port the app runs on (Cloud Run uses PORT environment variable)
+EXPOSE 3001
 
-# Expose the port the app runs on
-EXPOSE 3000
-
-# Run the application
-CMD ["serve", "-s", "dist"]
+# Run the Node.js server
+CMD ["node", "server.js"]

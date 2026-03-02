@@ -7,3 +7,15 @@ export GOOGLE_CLOUD_PROJECT="pr-tftest"
 git add .
 git commit -m "Your descriptive commit message here"
 git push origin main
+
+<prototype_requirements>Build an interactive, clickable prototype with:- Realistic sample data - Functional navigation between all screens/sections- Visual feedback on interactions (hover states, button clicks, form submissions)- A polished, professional UI using a  induclean deAdd industrial deisgn to this protyoe sign system</prototype_requirements>
+
+gcloud auth login
+
+Update CLI Version
+
+sudo npm install -g @google/gemini-cli@latest
+
+git add .
+git commit -m "Refactored the code and have single source of for both backen annd and frontend"
+git push origin main
