@@ -21,6 +21,7 @@ import AlertsView from '@src/features/scada-triage/components/AlertsView';
 import WorkflowView from '@src/features/maintenance/components/WorkflowView';
 import TopologyView from '@src/features/topology/components/TopologyView';
 import useInventory from '@src/hooks/useInventory';
+import Login from '@src/components/auth/Login';
 
 // --- MOCK DATA ---
 const INITIAL_SCADA_STREAM: ScadaData[] = [
@@ -37,6 +38,7 @@ const INITIAL_PIPELINE_NODES: PipelineNode[] = [
 
 
 const App = () => {
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [activeTab, setActiveTab] = useState('dashboard');
     const [stream, setStream] = useState<ScadaData[]>(INITIAL_SCADA_STREAM);
     const [alerts, setAlerts] = useState<ScadaData[]>([]);
@@ -53,6 +55,10 @@ const App = () => {
             console.log(`Balance: ${balance / LAMPORTS_PER_SOL} SOL`);
         });
     }, []);
+
+    const handleLogin = () => {
+        setIsAuthenticated(true);
+    };
 
     // Simulation Logic
     const simulateAnomaly = () => {
@@ -94,124 +100,130 @@ const App = () => {
 
     return (
         <div className={`flex h-screen font-sans selection:bg-orange-500/30 overflow-hidden bg-[#0d0d0d] text-zinc-400`}>
-            {/* Sidebar */}
-            <div className={`w-64 border-r flex flex-col p-6 z-20 bg-[#0d0d0d] border-zinc-900`}>
-                <div className="flex items-center gap-3 mb-12">
-                    <div className="bg-orange-600 p-1.5 rounded-lg shadow-lg shadow-orange-900/20">
-                        <img src={logo} alt="Velocity Logo" className="w-5 h-5" />
-                    </div>
-                    <h1 className={`font-black tracking-[0.2em] text-xl text-white uppercase`}>Velocity</h1>
-                </div>
-
-                <nav className="flex-1 -mx-2">
-                    <SidebarItem icon={Activity} label="Dashboard" active={activeTab === 'dashboard'} onClick={() => setActiveTab('dashboard')} />
-                    <SidebarItem icon={AlertTriangle} label="Anomalies" active={activeTab === 'alerts'} onClick={() => setActiveTab('alerts')} />
-                    <SidebarItem icon={Zap} label="Agentic Engine" active={activeTab === 'workflow'} onClick={() => setActiveTab('workflow')} />
-                    <SidebarItem icon={Package} label="Inventory" active={activeTab === 'inventory'} onClick={() => setActiveTab('inventory')} />
-                    <SidebarItem icon={GitBranch} label="Pipeline" active={activeTab === 'nodes'} onClick={() => setActiveTab('nodes')} />
-                </nav>
-
-                <div className="mt-auto">
-                    <div className="h-0.5 w-full bg-zinc-900 rounded-full overflow-hidden mb-4">
-                        <div className="h-full bg-blue-600 w-2/3 shadow-[0_0_8px_rgba(37,99,235,0.5)]"></div>
-                    </div>
-                    <div className="flex justify-between items-center px-1">
-                        <span className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest">Agentic Asset POC</span>
-                    </div>
-                </div>
-            </div>
-
-            {/* Main Content Area */}
-            <div className="flex-1 flex flex-col relative overflow-hidden">
-                {/* Header */}
-                <header className={`h-20 flex items-center justify-between px-10 border-b z-10 bg-[#0d0d0d]/80 border-zinc-900/50 backdrop-blur-md`}>
-                    <div className={`flex items-center gap-4 px-4 py-2 rounded-xl border w-96 bg-zinc-900/50 border-zinc-800/50`}>
-                        <Search size={18} className="text-zinc-600" />
-                        <input type="text" placeholder="Search Assets..." className={`bg-transparent border-none outline-none text-sm placeholder-zinc-600 w-full text-white`} />
-                    </div>
-
-                    <div className="flex items-center gap-10 text-right">
-                        <div className="flex flex-col">
-                            <span className="text-[10px] font-bold text-zinc-600 uppercase tracking-tighter">Throughput</span>
-                            <span className={`text-sm font-black tracking-tighter text-white`}>500.0 MMcf / d</span>
-                        </div>
-                        <div className="flex flex-col">
-                            <span className="text-[10px] font-bold text-zinc-600 uppercase tracking-tighter">Agents Online</span>
-                            <span className={`text-sm font-black tracking-tighter text-white`}>24</span>
+            {!isAuthenticated && <Login onLogin={handleLogin} />}
+            
+            {isAuthenticated && (
+                <>
+                    {/* Sidebar */}
+                    <div className={`w-64 border-r flex flex-col p-6 z-20 bg-[#0d0d0d] border-zinc-900`}>
+                        <div className="flex items-center gap-3 mb-12">
+                            <div className="bg-orange-600 p-1.5 rounded-lg shadow-lg shadow-orange-900/20">
+                                <img src={logo} alt="Velocity Logo" className="w-5 h-5" />
+                            </div>
+                            <h1 className={`font-black tracking-[0.2em] text-xl text-white uppercase`}>Velocity</h1>
                         </div>
 
-                        <button
-                            onClick={simulateAnomaly}
-                            className="bg-orange-600 hover:bg-orange-500 text-white px-6 py-2.5 rounded-xl text-xs font-black transition-all shadow-lg shadow-orange-900/20 active:scale-95"
-                        >
-                            Simulate Anomaly
-                        </button>
+                        <nav className="flex-1 -mx-2">
+                            <SidebarItem icon={Activity} label="Dashboard" active={activeTab === 'dashboard'} onClick={() => setActiveTab('dashboard')} />
+                            <SidebarItem icon={AlertTriangle} label="Anomalies" active={activeTab === 'alerts'} onClick={() => setActiveTab('alerts')} />
+                            <SidebarItem icon={Zap} label="Agentic Engine" active={activeTab === 'workflow'} onClick={() => setActiveTab('workflow')} />
+                            <SidebarItem icon={Package} label="Inventory" active={activeTab === 'inventory'} onClick={() => setActiveTab('inventory')} />
+                            <SidebarItem icon={GitBranch} label="Pipeline" active={activeTab === 'nodes'} onClick={() => setActiveTab('nodes')} />
+                        </nav>
 
-                        <div className={`flex items-center gap-4 border-l pl-10 border-zinc-900`}>
-                            <div className="relative cursor-pointer text-zinc-400 hover:text-white transition-colors">
-                                <Bell size={20} />
-                                <div className="absolute -top-1 -right-1 w-2 h-2 bg-orange-600 rounded-full border-2 border-[#0d0d0d]"></div>
+                        <div className="mt-auto">
+                            <div className="h-0.5 w-full bg-zinc-900 rounded-full overflow-hidden mb-4">
+                                <div className="h-full bg-blue-600 w-2/3 shadow-[0_0_8px_rgba(37,99,235,0.5)]"></div>
                             </div>
-                            <div className={`p-2 rounded-xl cursor-pointer transition-colors border bg-zinc-900 border-zinc-800 hover:bg-zinc-800`}>
-                                <Settings size={20} />
-                            </div>
-                            <div className="w-10 h-10 bg-orange-600/20 rounded-full border border-orange-500/20 flex items-center justify-center overflow-hidden cursor-pointer">
-                                <User size={24} className="text-orange-500" />
+                            <div className="flex justify-between items-center px-1">
+                                <span className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest">Agentic Asset POC</span>
                             </div>
                         </div>
                     </div>
-                </header>
 
-                <main className="flex-1 p-8 overflow-y-auto">
-                    {/* DASHBOARD TAB */}
-                    {activeTab === 'dashboard' && (
-                        <DashboardView stream={stream} alerts={alerts} startWorkflow={startWorkflow} />
-                    )}
+                    {/* Main Content Area */}
+                    <div className="flex-1 flex flex-col relative overflow-hidden">
+                        {/* Header */}
+                        <header className={`h-20 flex items-center justify-between px-10 border-b z-10 bg-[#0d0d0d]/80 border-zinc-900/50 backdrop-blur-md`}>
+                            <div className={`flex items-center gap-4 px-4 py-2 rounded-xl border w-96 bg-zinc-900/50 border-zinc-800/50`}>
+                                <Search size={18} className="text-zinc-600" />
+                                <input type="text" placeholder="Search Assets..." className={`bg-transparent border-none outline-none text-sm placeholder-zinc-600 w-full text-white`} />
+                            </div>
 
-                    {/* INVENTORY TAB */}
-                    {activeTab === 'inventory' && (
-                        <InventoryView
-                            inventory={inventory}
-                            setInventory={setInventory}
-                            addLog={addLog}
-                        />
-                    )}
+                            <div className="flex items-center gap-10 text-right">
+                                <div className="flex flex-col">
+                                    <span className="text-[10px] font-bold text-zinc-600 uppercase tracking-tighter">Throughput</span>
+                                    <span className={`text-sm font-black tracking-tighter text-white`}>500.0 MMcf / d</span>
+                                </div>
+                                <div className="flex flex-col">
+                                    <span className="text-[10px] font-bold text-zinc-600 uppercase tracking-tighter">Agents Online</span>
+                                    <span className={`text-sm font-black tracking-tighter text-white`}>24</span>
+                                </div>
 
-                    {/* ANOMALIES TAB (Agent A) - Image 1 */}
-                    {activeTab === 'alerts' && (
-                        <AlertsView
-                            alerts={alerts}
-                            activeWorkflow={activeWorkflow}
-                            startWorkflow={startWorkflow}
-                        />
-                    )}
+                                <button
+                                    onClick={simulateAnomaly}
+                                    className="bg-orange-600 hover:bg-orange-500 text-white px-6 py-2.5 rounded-xl text-xs font-black transition-all shadow-lg shadow-orange-900/20 active:scale-95"
+                                >
+                                    Simulate Anomaly
+                                </button>
 
-                    {/* AGENTIC ENGINE (Tab 'workflow') - Image 2 */}
-                    {activeTab === 'workflow' && (
-                        <WorkflowView
-                            activeWorkflow={activeWorkflow}
-                            workflowStep={workflowStep}
-                            logs={logs}
-                            completeMaintenance={completeMaintenance}
-                            setNodes={setNodes}
-                            // INITIAL_PIPELINE_NODES={INITIAL_PIPELINE_NODES} // Removed
-                            setInventory={setInventory}
-                            addLog={addLog}
-                            setWorkflowStep={setWorkflowStep}
-                            // setActiveTab={setActiveTab} // Removed
-                        />
-                    )}
+                                <div className={`flex items-center gap-4 border-l pl-10 border-zinc-900`}>
+                                    <div className="relative cursor-pointer text-zinc-400 hover:text-white transition-colors">
+                                        <Bell size={20} />
+                                        <div className="absolute -top-1 -right-1 w-2 h-2 bg-orange-600 rounded-full border-2 border-[#0d0d0d]"></div>
+                                    </div>
+                                    <div className={`p-2 rounded-xl cursor-pointer transition-colors border bg-zinc-900 border-zinc-800 hover:bg-zinc-800`}>
+                                        <Settings size={20} />
+                                    </div>
+                                    <div className="w-10 h-10 bg-orange-600/20 rounded-full border border-orange-500/20 flex items-center justify-center overflow-hidden cursor-pointer">
+                                        <User size={24} className="text-orange-500" />
+                                    </div>
+                                </div>
+                            </div>
+                        </header>
 
-                    {/* PIPELINE TOPOLOGY (Tab 'nodes') - Image 3 */}
-                    {activeTab === 'nodes' && (
-                        <TopologyView
-                            alerts={alerts}
-                            nodes={nodes}
-                            workflowStep={workflowStep}
-                        />
-                    )}
-                </main>
-            </div>
+                        <main className="flex-1 p-8 overflow-y-auto">
+                            {/* DASHBOARD TAB */}
+                            {activeTab === 'dashboard' && (
+                                <DashboardView stream={stream} alerts={alerts} startWorkflow={startWorkflow} />
+                            )}
+
+                            {/* INVENTORY TAB */}
+                            {activeTab === 'inventory' && (
+                                <InventoryView
+                                    inventory={inventory}
+                                    setInventory={setInventory}
+                                    addLog={addLog}
+                                />
+                            )}
+
+                            {/* ANOMALIES TAB (Agent A) - Image 1 */}
+                            {activeTab === 'alerts' && (
+                                <AlertsView
+                                    alerts={alerts}
+                                    activeWorkflow={activeWorkflow}
+                                    startWorkflow={startWorkflow}
+                                />
+                            )}
+
+                            {/* AGENTIC ENGINE (Tab 'workflow') - Image 2 */}
+                            {activeTab === 'workflow' && (
+                                <WorkflowView
+                                    activeWorkflow={activeWorkflow}
+                                    workflowStep={workflowStep}
+                                    logs={logs}
+                                    completeMaintenance={completeMaintenance}
+                                    setNodes={setNodes}
+                                    // INITIAL_PIPELINE_NODES={INITIAL_PIPELINE_NODES} // Removed
+                                    setInventory={setInventory}
+                                    addLog={addLog}
+                                    setWorkflowStep={setWorkflowStep}
+                                    // setActiveTab={setActiveTab} // Removed
+                                />
+                            )}
+
+                            {/* PIPELINE TOPOLOGY (Tab 'nodes') - Image 3 */}
+                            {activeTab === 'nodes' && (
+                                <TopologyView
+                                    alerts={alerts}
+                                    nodes={nodes}
+                                    workflowStep={workflowStep}
+                                />
+                            )}
+                        </main>
+                    </div>
+                </>
+            )}
         </div>
     );
 };
