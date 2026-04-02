@@ -1,10 +1,10 @@
-# Velocity: Agentic Asset POC
+# Field Operations: Agentic Asset POC
 
-Velocity is a high-performance, industrial-grade monitoring and maintenance orchestration platform. It leverages an **Agentic Engine** to automate the lifecycle of asset anomalies, from detection to safety closure, providing real-time situational awareness through a bespoke dark-themed interface.
+Field Operations is a high-performance, industrial-grade monitoring and maintenance orchestration platform. It leverages an **Agentic Engine** to automate the lifecycle of asset anomalies, from detection to safety closure, providing real-time situational awareness through a bespoke dark-themed interface.
 
 ## 🏗 Architecture
 
-Velocity follows a **Single-Port Integrated Architecture**, designed for seamless deployment in environments like GCP Cloud Workstations and Cloud Run.
+Field Operations follows a **Single-Port Integrated Architecture**, designed for seamless deployment in environments like GCP Cloud Workstations and Cloud Run.
 
 -   **Frontend:** A React (TypeScript) SPA built with Vite. It communicates with the backend via relative API paths, eliminating CORS complexities.
 -   **Backend:** A Node.js (Express) server that serves the compiled frontend assets and provides a RESTful API for asset and inventory management.

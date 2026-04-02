@@ -22,6 +22,8 @@ import WorkflowView from '@src/features/maintenance/components/WorkflowView';
 import TopologyView from '@src/features/topology/components/TopologyView';
 import useInventory from '@src/hooks/useInventory';
 import Login from '@src/components/auth/Login';
+import CommandCenter from './features/command-center/components/CommandCenter';
+import { AppNotification } from './features/command-center/types';
 
 // --- MOCK DATA ---
 const INITIAL_SCADA_STREAM: ScadaData[] = [
@@ -37,8 +39,37 @@ const INITIAL_PIPELINE_NODES: PipelineNode[] = [
 ];
 
 
+const INITIAL_NOTIFICATIONS: AppNotification[] = [
+    {
+        id: 'notif-1',
+        priority: 'critical',
+        timestamp: new Date().toISOString(),
+        message: 'Critical anomaly detected on COMP-TX-VALLEY-01. Temperature high.',
+        asset_info: { id: 'COMP-TX-VALLEY-01', location: 'Texas Valley' },
+        actions: [{ label: 'Acknowledge' }, { label: 'Assign' }],
+        status: 'unread'
+    },
+    {
+        id: 'notif-2',
+        priority: 'warning',
+        timestamp: new Date().toISOString(),
+        message: 'Triage Latency exceeding 5s warning.',
+        status: 'unread'
+    },
+    {
+        id: 'notif-3',
+        priority: 'info',
+        timestamp: new Date().toISOString(),
+        message: 'System connection stable.',
+        status: 'unread'
+    }
+];
+
 const App = () => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [isCommandCenterOpen, setIsCommandCenterOpen] = useState(false);
+    const [notifications, setNotifications] = useState<AppNotification[]>(INITIAL_NOTIFICATIONS);
+    const [isSimulating, setIsSimulating] = useState(false);
     const [activeTab, setActiveTab] = useState('dashboard');
     const [stream, setStream] = useState<ScadaData[]>(INITIAL_SCADA_STREAM);
     const [alerts, setAlerts] = useState<ScadaData[]>([]);
@@ -108,9 +139,9 @@ const App = () => {
                     <div className={`w-64 border-r flex flex-col p-6 z-20 bg-[#0d0d0d] border-zinc-900`}>
                         <div className="flex items-center gap-3 mb-12">
                             <div className="bg-orange-600 p-1.5 rounded-lg shadow-lg shadow-orange-900/20">
-                                <img src={logo} alt="Velocity Logo" className="w-5 h-5" />
+                                <img src={logo} alt="Field Operations Logo" className="w-5 h-5" />
                             </div>
-                            <h1 className={`font-black tracking-[0.2em] text-xl text-white uppercase`}>Velocity</h1>
+                            <h1 className={`font-black tracking-[0.2em] text-sm text-white uppercase`}>Field Operations</h1>
                         </div>
 
                         <nav className="flex-1 -mx-2">
@@ -158,9 +189,14 @@ const App = () => {
                                 </button>
 
                                 <div className={`flex items-center gap-4 border-l pl-10 border-zinc-900`}>
-                                    <div className="relative cursor-pointer text-zinc-400 hover:text-white transition-colors">
+                                    <div 
+                                        onClick={() => setIsCommandCenterOpen(true)}
+                                        className="relative cursor-pointer text-zinc-400 hover:text-white transition-colors"
+                                    >
                                         <Bell size={20} />
-                                        <div className="absolute -top-1 -right-1 w-2 h-2 bg-orange-600 rounded-full border-2 border-[#0d0d0d]"></div>
+                                        {notifications.some(n => n.status === 'unread') && (
+                                            <div className="absolute -top-1 -right-1 w-2 h-2 bg-orange-600 rounded-full border-2 border-[#0d0d0d]"></div>
+                                        )}
                                     </div>
                                     <div className={`p-2 rounded-xl cursor-pointer transition-colors border bg-zinc-900 border-zinc-800 hover:bg-zinc-800`}>
                                         <Settings size={20} />
@@ -220,8 +256,26 @@ const App = () => {
                                     workflowStep={workflowStep}
                                 />
                             )}
-                        </main>
+                         </main>
                     </div>
+
+                    <CommandCenter
+                        isOpen={isCommandCenterOpen}
+                        onClose={() => setIsCommandCenterOpen(false)}
+                        notifications={notifications}
+                        onAcknowledge={(id) => {
+                            setNotifications(prev => prev.filter(n => n.id !== id));
+                        }}
+                        onAssign={(id, agentId) => {
+                            addLog(`[Command Center] Notification ${id} assigned to agent ${agentId}`);
+                            setNotifications(prev => prev.map(n => n.id === id ? { ...n, status: 'acknowledged' } : n));
+                        }}
+                        onStopSimulation={() => {
+                            setIsSimulating(false);
+                            addLog(`[Command Center] User stopped simulation session.`);
+                        }}
+                        isSimulating={isSimulating}
+                    />
                 </>
             )}
         </div>

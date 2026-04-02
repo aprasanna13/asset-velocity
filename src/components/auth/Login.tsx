@@ -25,9 +25,9 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             <div className="w-full max-w-md p-8 bg-[#0d0d0d] border border-zinc-800 rounded-2xl shadow-2xl">
                 <div className="flex flex-col items-center mb-8">
                     <div className="bg-orange-600 p-3 rounded-2xl shadow-lg shadow-orange-900/20 mb-4">
-                        <img src={logo} alt="Velocity Logo" className="w-8 h-8" />
+                        <img src={logo} alt="Field Operations Logo" className="w-8 h-8" />
                     </div>
-                    <h1 className="font-black tracking-[0.2em] text-2xl text-white uppercase">Velocity</h1>
+                    <h1 className="font-black tracking-[0.2em] text-2xl text-white uppercase">Field Operations</h1>
                     <p className="text-zinc-500 text-xs mt-2 uppercase tracking-widest font-bold">Secure Access Portal</p>
                 </div>
 

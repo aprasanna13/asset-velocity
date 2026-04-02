@@ -27,7 +27,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({ stream, alerts, startWork
                     </div>
                 </div>
                 <div className="bg-zinc-900/50 border border-zinc-800 p-6 rounded-2xl">
-                    <p className="text-zinc-500 text-xs font-bold uppercase mb-1">Velocity Score</p>
+                    <p className="text-zinc-500 text-xs font-bold uppercase mb-1">Field Score</p>
                     <p className="text-4xl font-black text-white">94%</p>
                     <div className="mt-4 flex items-center text-xs text-emerald-400 gap-1 font-bold">
                         <BarChart3 size={14} /> +2.4% Efficiency

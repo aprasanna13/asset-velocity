@@ -169,3 +169,19 @@ Throughout this process, I aimed to be methodical, addressing one issue at a tim
 ## [1.0.0] - 2026-02-27
 ### Added
 - Initial project setup.
+
+## [Unreleased - 2026-04-02]
+### Changed
+- Renamed application from "Velocity" to "Field Operations" across UI (sidebar, headers, login), metrics ("Field Score"), configuration (`package.json`), and documentation (`README.md`, `prd.md`).
+
+---
+
+**Timestamp:** 2026-04-02 16:45:00
+- **Change Type:** Feature Implementation
+- **Description:** Implemented the Command Center (Notification Flyout) as specified in `changerequest.md`.
+- **Logic Followed:**
+    1.  **Modularization**: Separated types and component logic into a dedicated feature directory (`src/features/command-center`) to avoid cluttering main layout files.
+    2.  **State Driven**: Leveraged React state in the main `App.tsx` to handle open/close transitions and notification mutations (Acknowledge, Assign), passing them as props to the presenter component.
+    3.  **Visual Separation**: Used a right-side flyout overlay with z-index isolation to ensure visibility across all views without disrupting dashboard layout.
+- **Impact:** Transformed a static bell icon into an interactive hub for system triage and monitoring.
+- **Verification:** Verified successful production build (`tsc && vite build`).

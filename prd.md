@@ -1,6 +1,6 @@
-# **Product Requirements Document: Agentic Asset Velocity (POC)**
+# **Product Requirements Document: Field Operations (POC)**
 
-**Project Name:** Agentic Asset Velocity
+**Project Name:** Field Operations
 
 **Target Asset:** Natural Gas Pipeline Compressor
 
@@ -12,6 +12,8 @@ The goal of this POC is to demonstrate a rapid "headless" agentic workflow that 
 
 1. **Alert Triage:** Filtering thousands of high-frequency SCADA signals to identify actionable anomalies.  
 2. **Maintenance Inertia:** Automating the logistical tail of maintenance (parts retrieval, scheduling, and load balancing) to maintain throughput.
+
+This system also includes an interactive **Command Center** (UI Hub) to transform static notifications into real-time triage, batch event processing, and direct system intervention.
 
 ## **2\. Problem Statement**
 
@@ -36,6 +38,15 @@ Operators currently struggle to differentiate between standard operational fluct
   * **Step 3: Load Balancing:** Proactively calculate output increases for adjacent pipeline compressors to maintain pressure.  
   * **Step 4: Orchestration:** Generate notifications for Ground Staff (Maintenance) and Operations (Scheduling).  
   * **Step 5: QA Closure:** Monitor for "Safety Check Complete" status and close the ticket.
+
+### **3.3. Command Center (UI Hub)**
+
+* **Role:** Real-time Triage & System Intervention.
+* **Logic:**
+  * **Alert Categorization:** Group by severity (Red=Critical/Vibration, Yellow=Warning/Latency, Blue=Info).
+  * **Live Feed & Intelligent Batching:** Group high-frequency events (e.g., node status changes) to prevent alert fatigue.
+  * **Simulation Management:** Centralized hub for simulation status and Quick Kill.
+  * **Technical Health Monitoring:** Warnings for triage latency > 5s.
 
 ## **4\. Maintenance Workflow Lifecycle**
 
@@ -90,8 +101,20 @@ High-Flow Centrifugal,LUBE-SYN-Q,Synthetic Lubricant (5 Gal),25,0
 
 ```
 
+### **5.4 Technical Data Schema for Notifications**
+
+| Field | Type | Description | Example |
+| :---- | :---- | :---- | :---- |
+| notification\_id | String | Unique Identifier | "8821-XP" |
+| priority | Enum | Level of urgency | "critical", "warning", "info" |
+| asset\_info | Object | Target hardware details | {"id": "COMP-TX-VALLEY-01", "location": "Texas Valley"} |
+| actions | Array | UI buttons to render | \[{"label": "Acknowledge"}, {"label": "Assign"}\] |
+
 ## **6\. Success Criteria**
 
 * **Validation:** Customer stakeholders (Exxon, Halliburton) confirm the workflow logic aligns with field operations.  
 * **Latency:** Agent B initiates the lifecycle within \< 5 seconds of the Critical Alert detection.  
 * **Accuracy:** Load balancing calculation correctly redistributes missing PSI to operational nodes.
+* **Triage Efficiency:** Goal of <30s from notification receipt to "Acknowledge" click.
+* **Navigation Reduction:** 20% decrease in clicks to the "Anomalies" sidebar tab.
+* **System Stability:** Zero "Stream Connection Lost" notifications persisting longer than 10s without automated retry logs.
