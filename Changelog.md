@@ -185,3 +185,39 @@ Throughout this process, I aimed to be methodical, addressing one issue at a tim
     3.  **Visual Separation**: Used a right-side flyout overlay with z-index isolation to ensure visibility across all views without disrupting dashboard layout.
 - **Impact:** Transformed a static bell icon into an interactive hub for system triage and monitoring.
 - **Verification:** Verified successful production build (`tsc && vite build`).
+
+---
+
+**Timestamp:** 2026-04-07 12:49:00
+- **Change Type:** Documentation
+- **Description:** Added `README.md` to the `backend` directory to explain the purpose of the database files.
+- **Reasoning:** To fulfill the user's request to document the contents and purpose of the `backend` directory files.
+- **Impact:** Improved developer documentation for the backend components.
+- **Verification:** Verified file creation and correct markdown content.
+
+---
+
+**Timestamp:** 2026-04-07 12:50:00
+- **Change Type:** Documentation
+- **Description:** Added `README.md` to the `dist` directory to explain the purpose of the production build files.
+- **Reasoning:** To fulfill the user's request to document the contents and purpose of the frontend build artifacts in the `dist` directory.
+- **Impact:** Improved developer documentation for the compiled frontend build output.
+- **Verification:** Verified file creation and correct markdown content.
+
+---
+
+**Timestamp:** 2026-04-07 12:53:00
+- **Change Type:** Documentation
+- **Description:** Added `README.md` to the `src` directory to detail the frontend source files, components, and feature modules.
+- **Reasoning:** To fulfill the user's request to document the structure, modules, and files in the `src` directory.
+- **Impact:** Improved developer onboarding and documentation for the frontend codebase.
+- **Verification:** Verified file creation and correct markdown content.
+
+---
+
+**Timestamp:** 2026-04-07 13:08:00
+- **Change Type:** Documentation
+- **Description:** Updated the root `README.md` to incorporate detailed summaries of all major subdirectories (`src/`, `backend/`, `dist/`).
+- **Reasoning:** To fulfill the user's request to synthesize the subdirectory READMEs and root-level files into a comprehensive top-level documentation file.
+- **Impact:** Centralized and enhanced repository structure and setup documentation.
+- **Verification:** Verified successful file overwrite and correct markdown formatting.
