@@ -45,3 +45,50 @@ export interface OverrideLog {
     justification: string;
 }
 
+export interface HandoffEvent {
+    id: string;
+    severity: number;
+    category: 'critical' | 'routine';
+    subsystem: string;
+    title: string;
+    description: string;
+    timestamp: string;
+    acknowledged?: boolean;
+}
+
+export interface HandoffPayload {
+    mode: 'Standard' | 'Storm/Emergency';
+    threshold: number;
+    criticalEvents: HandoffEvent[];
+    routineEvents: HandoffEvent[];
+    decisionLogic: {
+        outcome: string;
+        factors: string[];
+    };
+}
+
+export interface DisputeLog {
+    reason: string;
+    timestamp: string;
+    outgoingOperatorNotes?: string;
+}
+
+export interface BreakGlassAudit {
+    supervisorId: string;
+    timestamp: string;
+    reason: string;
+}
+
+export interface StructuredLogPayload {
+    [key: string]: any;
+}
+
+export interface ExecutionLog {
+    id: string;
+    agent: string;
+    timestamp: string;
+    severity: 'Routine' | 'Warning' | 'Critical';
+    message: string;
+    payload?: StructuredLogPayload;
+}
+

@@ -1,5 +1,6 @@
 // src/services/api.ts
-import { InventoryItem } from '@src/types'; // Import necessary types
+import { InventoryItem, HandoffPayload, DisputeLog } from '@src/types';
+
 
 const API_BASE_URL = '/api';
 
@@ -62,4 +63,86 @@ export const orderParts = async (partNumber: string, quantity: number): Promise<
         console.error("Error ordering parts:", error);
         throw error;
     }
+};
+
+export const fetchHandoffBriefing = async (): Promise<HandoffPayload> => {
+    // Simulating an API call with mock data that meets the requirements
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            resolve({
+                mode: 'Standard',
+                threshold: 70,
+                criticalEvents: [
+                    {
+                        id: 'evt-1',
+                        severity: 85,
+                        category: 'critical',
+                        subsystem: 'Pipeline A',
+                        title: 'High Pressure Anomaly',
+                        description: 'Pressure in section 4 is exceeding normal limits. Requires manual inspection.',
+                        timestamp: new Date(Date.now() - 3600000).toISOString(),
+                    },
+                    {
+                        id: 'evt-2',
+                        severity: 75,
+                        category: 'critical',
+                        subsystem: 'Compressor B',
+                        title: 'Vibration Warning',
+                        description: 'Compressor B showing abnormal vibration patterns. Maintenance team notified.',
+                        timestamp: new Date(Date.now() - 1800000).toISOString(),
+                    }
+                ],
+                routineEvents: [
+                    {
+                        id: 'evt-3',
+                        severity: 20,
+                        category: 'routine',
+                        subsystem: 'Cooling System',
+                        title: 'Routine Sensor Check',
+                        description: 'All sensors in cooling system calibrated successfully.',
+                        timestamp: new Date(Date.now() - 7200000).toISOString(),
+                    },
+                    {
+                        id: 'evt-4',
+                        severity: 10,
+                        category: 'routine',
+                        subsystem: 'Power Backup',
+                        title: 'Battery Status Update',
+                        description: 'Backup batteries holding 98% charge.',
+                        timestamp: new Date(Date.now() - 5400000).toISOString(),
+                    }
+                ],
+                decisionLogic: {
+                    outcome: 'Delayed scheduled maintenance on Compressor B by 4 hours.',
+                    factors: [
+                        'Incoming severe weather pattern detected (high risk for outdoor crew).',
+                        'Backup cooling capacity is sufficient to handle delayed compressor repair.',
+                        'Grid load is currently at peak demand, maximizing uptime priority.'
+                    ]
+                }
+            });
+        }, 500);
+    });
+};
+
+export const submitHandoffAudit = async (pin: string, readReceipts: string[]): Promise<{ success: boolean }> => {
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            console.log('Submitting read receipts:', readReceipts);
+            if (pin === '1234') { // Mock valid PIN
+                resolve({ success: true });
+            } else {
+                reject(new Error('Invalid PIN. Verification failed.'));
+            }
+        }, 300);
+    });
+};
+
+export const rejectHandoff = async (dispute: DisputeLog): Promise<{ success: boolean }> => {
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            console.log('Handoff rejected with dispute:', dispute);
+            resolve({ success: true });
+        }, 300);
+    });
 };

@@ -10,16 +10,19 @@ import {
     User,
     Zap,
     GitBranch,
-    Package
+    Package,
+    Shield
 } from 'lucide-react';
 
-import { ScadaData, PipelineNode } from '@src/types';
+import { ScadaData, PipelineNode, ExecutionLog } from '@src/types';
 import SidebarItem from '@src/components/layout/SidebarItem';
 import DashboardView from '@src/features/scada-triage/components/DashboardView';
 import InventoryView from '@src/features/maintenance/components/InventoryView';
 import AlertsView from '@src/features/scada-triage/components/AlertsView';
 import WorkflowView from '@src/features/maintenance/components/WorkflowView';
 import TopologyView from '@src/features/topology/components/TopologyView';
+import { HandoffContainer } from '@src/features/handoff/HandoffContainer';
+import { parseRawLogToStructured } from './components/ExecutionConsole/LogAdapter';
 import useInventory from '@src/hooks/useInventory';
 import Login from '@src/components/auth/Login';
 import CommandCenter from './features/command-center/components/CommandCenter';
@@ -80,7 +83,7 @@ const App = () => {
     const [alerts, setAlerts] = useState<ScadaData[]>([]);
     const [activeWorkflow, setActiveWorkflow] = useState<ScadaData | null>(null);
     const [workflowStep, setWorkflowStep] = useState(0);
-    const [logs, setLogs] = useState<string[]>([]);
+    const [logs, setLogs] = useState<ExecutionLog[]>([]);
     const [nodes, setNodes] = useState<PipelineNode[]>(INITIAL_PIPELINE_NODES);
     const { inventory, setInventory } = useInventory(); // Using custom hook
 
@@ -134,7 +137,17 @@ const App = () => {
     };
 
     const addLog = (msg: string) => {
-        setLogs(prev => [`[${new Date().toLocaleTimeString()}] ${msg}`, ...prev]);
+        try {
+            const rawString = `[${new Date().toLocaleTimeString()}] ${msg}`;
+            const structured = parseRawLogToStructured(rawString);
+            setLogs(prev => {
+                const updated = [...prev, structured];
+                return updated.slice(-50);
+            });
+        } catch (error) {
+            console.error(error);
+            throw error;
+        }
     };
 
     const completeMaintenance = () => {
@@ -163,6 +176,7 @@ const App = () => {
 
                         <nav className="flex-1 -mx-2">
                             <SidebarItem icon={Activity} label="Dashboard" active={activeTab === 'dashboard'} onClick={() => setActiveTab('dashboard')} />
+                            <SidebarItem icon={Shield} label="Handoff" active={activeTab === 'handoff'} onClick={() => setActiveTab('handoff')} />
                             <SidebarItem icon={AlertTriangle} label="Anomalies" active={activeTab === 'alerts'} onClick={() => setActiveTab('alerts')} />
                             <SidebarItem icon={Zap} label="Agentic Engine" active={activeTab === 'workflow'} onClick={() => setActiveTab('workflow')} />
                             <SidebarItem icon={Package} label="Inventory" active={activeTab === 'inventory'} onClick={() => setActiveTab('inventory')} />
@@ -232,6 +246,11 @@ const App = () => {
                             {/* DASHBOARD TAB */}
                             {activeTab === 'dashboard' && (
                                 <DashboardView stream={stream} alerts={alerts} startWorkflow={startWorkflow} />
+                            )}
+
+                            {/* HANDOFF TAB */}
+                            {activeTab === 'handoff' && (
+                                <HandoffContainer />
                             )}
 
                             {/* INVENTORY TAB */}

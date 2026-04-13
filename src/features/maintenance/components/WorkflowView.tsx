@@ -1,5 +1,6 @@
 import React from 'react';
-import { ScadaData, PipelineNode, InventoryItem } from '@src/types';
+import { ScadaData, PipelineNode, InventoryItem, ExecutionLog } from '@src/types';
+import { ExecutionConsole } from '../../../components/ExecutionConsole/ExecutionConsole';
 import {
     Zap,
     GitBranch,
@@ -14,7 +15,7 @@ import { updateInventory } from '@src/services/api';
 interface WorkflowViewProps {
     activeWorkflow: ScadaData | null;
     workflowStep: number;
-    logs: string[];
+    logs: ExecutionLog[];
     completeMaintenance: () => void;
     setNodes: React.Dispatch<React.SetStateAction<PipelineNode[]>>;
     // INITIAL_PIPELINE_NODES: PipelineNode[]; // Removed
@@ -292,19 +293,8 @@ const WorkflowView: React.FC<WorkflowViewProps> = ({
             </div>
 
             {/* Full-Width Decoupled Execution Console */}
-            <div className="bg-[#1c1a16] border border-zinc-800/50 rounded-3xl p-6 flex flex-col">
-                <h4 className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-4">Live Agent Execution Console</h4>
-                <div className="h-48 overflow-y-auto space-y-2 pr-2 custom-scrollbar font-mono text-[10px]">
-                    {logs.length === 0 ? (
-                        <p className="text-zinc-700 italic">No agent activity logged.</p>
-                    ) : (
-                        logs.map((log, i) => (
-                            <div key={i} className="text-zinc-400 border-l border-zinc-800 pl-3 py-1">
-                                {log}
-                            </div>
-                        ))
-                    )}
-                </div>
+            <div className="h-72 flex flex-col">
+                <ExecutionConsole logs={logs} />
             </div>
         </div>
     );
