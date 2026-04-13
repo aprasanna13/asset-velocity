@@ -24,6 +24,11 @@ import useInventory from '@src/hooks/useInventory';
 import Login from '@src/components/auth/Login';
 import CommandCenter from './features/command-center/components/CommandCenter';
 import { AppNotification } from './features/command-center/types';
+import { SettingsModal } from './components/settings/SettingsModal';
+import { ChallengeModal } from './components/auth/ChallengeModal';
+import { ExplainabilityModal } from './components/explainability/ExplainabilityModal';
+import { useSafetyGuardrails } from './hooks/useSafetyGuardrails';
+import { mockNotifications, initialOverrideLogs } from './mockData';
 
 // --- MOCK DATA ---
 const INITIAL_SCADA_STREAM: ScadaData[] = [
@@ -68,7 +73,7 @@ const INITIAL_NOTIFICATIONS: AppNotification[] = [
 const App = () => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [isCommandCenterOpen, setIsCommandCenterOpen] = useState(false);
-    const [notifications, setNotifications] = useState<AppNotification[]>(INITIAL_NOTIFICATIONS);
+    const [notifications, setNotifications] = useState<AppNotification[]>([...mockNotifications, ...INITIAL_NOTIFICATIONS]);
     const [isSimulating, setIsSimulating] = useState(false);
     const [activeTab, setActiveTab] = useState('dashboard');
     const [stream, setStream] = useState<ScadaData[]>(INITIAL_SCADA_STREAM);
@@ -78,6 +83,18 @@ const App = () => {
     const [logs, setLogs] = useState<string[]>([]);
     const [nodes, setNodes] = useState<PipelineNode[]>(INITIAL_PIPELINE_NODES);
     const { inventory, setInventory } = useInventory(); // Using custom hook
+
+    // Safety Guardrails State
+    const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
+    const [isExplainOpen, setIsExplainOpen] = useState<boolean>(false);
+    const [activeEvidence, setActiveEvidence] = useState<any>(null);
+
+    const {
+        isChallengeOpen,
+        setIsChallengeOpen,
+        interceptAction,
+        validatePin
+    } = useSafetyGuardrails(initialOverrideLogs);
 
     useEffect(() => {
         const connection = new Connection(clusterApiUrl('devnet'), 'confirmed');
@@ -198,7 +215,10 @@ const App = () => {
                                             <div className="absolute -top-1 -right-1 w-2 h-2 bg-orange-600 rounded-full border-2 border-[#0d0d0d]"></div>
                                         )}
                                     </div>
-                                    <div className={`p-2 rounded-xl cursor-pointer transition-colors border bg-zinc-900 border-zinc-800 hover:bg-zinc-800`}>
+                                    <div 
+                                        onClick={() => setIsSettingsOpen(true)}
+                                        className={`p-2 rounded-xl cursor-pointer transition-colors border bg-zinc-900 border-zinc-800 hover:bg-zinc-800`}
+                                    >
                                         <Settings size={20} />
                                     </div>
                                     <div className="w-10 h-10 bg-orange-600/20 rounded-full border border-orange-500/20 flex items-center justify-center overflow-hidden cursor-pointer">
@@ -275,7 +295,47 @@ const App = () => {
                             addLog(`[Command Center] User stopped simulation session.`);
                         }}
                         isSimulating={isSimulating}
+                        onWhyClick={(evidence) => {
+                            setActiveEvidence(evidence);
+                            setIsExplainOpen(true);
+                        }}
+                        onMitigateClick={(assetId) => {
+                            if (interceptAction('Execute Mitigation', assetId, true)) {
+                                // Intercepted and opened challenge modal
+                            }
+                        }}
                     />
+
+                    <SettingsModal
+                        isOpen={isSettingsOpen}
+                        onClose={() => setIsSettingsOpen(false)}
+                    />
+
+                    <ChallengeModal
+                        isOpen={isChallengeOpen}
+                        onClose={() => setIsChallengeOpen(false)}
+                        onSubmit={(pin, justification) => {
+                            const success = validatePin(pin, justification);
+                            if (success) {
+                                addLog(`[Guardrail] Supervisor authorized mitigation override.`);
+                                // Here we would normally proceed with the mitigation
+                            }
+                            return success;
+                        }}
+                    />
+
+                    <ExplainabilityModal
+                        isOpen={isExplainOpen}
+                        onClose={() => setIsExplainOpen(false)}
+                        evidence={activeEvidence}
+                    />
+
+                    {/* Alert Passthrough Mechanism */}
+                    {isSettingsOpen && notifications.some(n => n.priority === 'critical' && n.status === 'unread') && (
+                        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[9999] bg-red-600 text-white font-black text-sm px-8 py-4 rounded-2xl shadow-2xl border-2 border-white flex items-center gap-3 animate-bounce">
+                            <span>🚨 CRITICAL PIPELINE ANOMALY DETECTED! CLOSE SETTINGS IMMEDIATELY!</span>
+                        </div>
+                    )}
                 </>
             )}
         </div>

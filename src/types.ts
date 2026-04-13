@@ -29,3 +29,19 @@ export interface PipelineNode {
     status: "Active" | "Maintenance" | "Active (Boosted)" | "Normal" | "Compensating";
     name: string;
 }
+
+export interface EvidencePayload {
+    formula: string;
+    variables: { [key: string]: string | number };
+    confidence_score: number;
+}
+
+export interface OverrideLog {
+    id: string;
+    timestamp: string;
+    asset_id: string;
+    operator_pin: string;
+    status: 'SUCCESS' | 'FAILED_ATTEMPT';
+    justification: string;
+}
+

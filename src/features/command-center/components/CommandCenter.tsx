@@ -12,6 +12,8 @@ interface CommandCenterProps {
     onAssign: (id: string, agentId: string) => void;
     onStopSimulation: () => void;
     isSimulating: boolean;
+    onWhyClick?: (evidence: any) => void;
+    onMitigateClick?: (assetId: string) => void;
 }
 
 const mockAgents: FieldAgent[] = [
@@ -27,7 +29,9 @@ const CommandCenter: React.FC<CommandCenterProps> = ({
     onAcknowledge,
     onAssign,
     onStopSimulation,
-    isSimulating
+    isSimulating,
+    onWhyClick,
+    onMitigateClick
 }) => {
     const [selectedAgents, setSelectedAgents] = useState<{ [key: string]: string }>({});
 
@@ -99,13 +103,21 @@ const CommandCenter: React.FC<CommandCenterProps> = ({
                     </div>
                 ) : (
                     notifications.map((notif) => (
-                        <div key={notif.id} className={`p-4 rounded-xl border ${getPriorityStyles(notif.priority)} transition-all duration-300`}>
+                        <div key={notif.id} className={`p-4 rounded-xl border ${getPriorityStyles(notif.priority)} transition-all duration-300 relative`}>
+                            {notif.evidence && onWhyClick && (
+                                <button
+                                    onClick={() => onWhyClick(notif.evidence)}
+                                    className="absolute top-4 right-4 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 text-[10px] font-black px-2.5 py-1 rounded-md transition-colors border border-blue-500/30"
+                                >
+                                    WHY?
+                                </button>
+                            )}
                             <div className="flex justify-between items-start mb-2">
                                 <div className="flex items-center gap-2">
                                     {getPriorityIcon(notif.priority)}
                                     <span className="font-bold text-xs uppercase tracking-wider">{notif.priority}</span>
                                 </div>
-                                <span className="text-[10px] text-zinc-500">{new Date(notif.timestamp).toLocaleTimeString()}</span>
+                                <span className="text-[10px] text-zinc-500 mr-12">{new Date(notif.timestamp).toLocaleTimeString()}</span>
                             </div>
                             
                             <p className="text-sm text-white mb-3">{notif.message}</p>
@@ -117,30 +129,41 @@ const CommandCenter: React.FC<CommandCenterProps> = ({
                                 </div>
                             )}
 
-                            <div className="flex items-center gap-2">
-                                <button 
-                                    onClick={() => onAcknowledge(notif.id)}
-                                    className="flex-1 bg-zinc-800 hover:bg-zinc-700 text-white text-[10px] font-bold py-2 rounded-lg transition-colors"
-                                >
-                                    Acknowledge
-                                </button>
-                                
-                                <div className="relative flex-1">
-                                    <select 
-                                        value={selectedAgents[notif.id] || ''}
-                                        onChange={(e) => {
-                                            setSelectedAgents({ ...selectedAgents, [notif.id]: e.target.value });
-                                            if (e.target.value) onAssign(notif.id, e.target.value);
-                                        }}
-                                        className="w-full bg-zinc-800 hover:bg-zinc-700 text-white text-[10px] font-bold py-2 px-3 rounded-lg border-none appearance-none outline-none pr-8 transition-colors cursor-pointer"
+                            <div className="flex flex-col gap-2">
+                                <div className="flex items-center gap-2">
+                                    <button 
+                                        onClick={() => onAcknowledge(notif.id)}
+                                        className="flex-1 bg-zinc-800 hover:bg-zinc-700 text-white text-[10px] font-bold py-2 rounded-lg transition-colors"
                                     >
-                                        <option value="" disabled>Assign Agent...</option>
-                                        {mockAgents.map(agent => (
-                                            <option key={agent.id} value={agent.id} className="bg-zinc-900">{agent.name}</option>
-                                        ))}
-                                    </select>
-                                    <UserPlus size={14} className="absolute right-3 top-2.5 text-zinc-400 pointer-events-none" />
+                                        Acknowledge
+                                    </button>
+                                    
+                                    <div className="relative flex-1">
+                                        <select 
+                                            value={selectedAgents[notif.id] || ''}
+                                            onChange={(e) => {
+                                                setSelectedAgents({ ...selectedAgents, [notif.id]: e.target.value });
+                                                if (e.target.value) onAssign(notif.id, e.target.value);
+                                            }}
+                                            className="w-full bg-zinc-800 hover:bg-zinc-700 text-white text-[10px] font-bold py-2 px-3 rounded-lg border-none appearance-none outline-none pr-8 transition-colors cursor-pointer"
+                                        >
+                                            <option value="" disabled>Assign Agent...</option>
+                                            {mockAgents.map(agent => (
+                                                <option key={agent.id} value={agent.id} className="bg-zinc-900">{agent.name}</option>
+                                            ))}
+                                        </select>
+                                        <UserPlus size={14} className="absolute right-3 top-2.5 text-zinc-400 pointer-events-none" />
+                                    </div>
                                 </div>
+
+                                {notif.actions?.some(a => a.label === 'Execute Mitigation') && onMitigateClick && (
+                                    <button
+                                        onClick={() => onMitigateClick(notif.asset_info?.id || 'UNKNOWN')}
+                                        className="w-full bg-orange-600 hover:bg-orange-500 text-white text-[10px] font-black py-2 rounded-lg transition-colors shadow-lg shadow-orange-900/20"
+                                    >
+                                        Execute Mitigation
+                                    </button>
+                                )}
                             </div>
                         </div>
                     ))

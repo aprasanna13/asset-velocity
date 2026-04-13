@@ -98,14 +98,15 @@ const WorkflowView: React.FC<WorkflowViewProps> = ({
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 flex-1 overflow-hidden">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full">
                 {/* Workflow Timeline */}
-                <div className="bg-[#1c1a16] border border-zinc-800/50 rounded-3xl p-10 flex flex-col overflow-hidden">
-                    <h3 className="text-[10px] font-black text-zinc-500 uppercase tracking-widest flex items-center gap-2 mb-10">
+                {/* Workflow Timeline */}
+                <div className="bg-[#1c1a16] border border-zinc-800/50 rounded-3xl p-6 flex flex-col overflow-hidden">
+                    <h3 className="text-[10px] font-black text-zinc-500 uppercase tracking-widest flex items-center gap-2 mb-4">
                         <GitBranch size={16} className="text-orange-500" /> Workflow Timeline
                     </h3>
-                    <div className="flex-1 space-y-12 relative overflow-y-auto pr-4 custom-scrollbar">
-                        <div className="absolute left-[17px] top-2 bottom-2 w-0.5 bg-zinc-800/50"></div>
+                    <div className="h-[360px] overflow-y-auto pr-3 custom-scrollbar relative flex flex-col gap-2.5">
+                        <div className="absolute left-[11px] top-2 bottom-2 w-0.5 bg-zinc-800/50"></div>
 
                         {[
                             { id: 1, title: 'Event Received', desc: 'Vibration spike detected at 04:12 UTC' },
@@ -115,43 +116,74 @@ const WorkflowView: React.FC<WorkflowViewProps> = ({
                             { id: 5, title: 'Orchestration & Notify', desc: 'Alerts dispatched to Ops and Field Teams' },
                             { id: 6, title: 'Execution Phase', desc: 'Replacement in progress (Est. 42 min)' },
                             { id: 7, title: 'Safety & QA Closure', desc: 'Awaiting digital signature' },
-                        ].map((step) => (
-                            <div key={step.id} className="flex gap-8 relative z-10">
-                                <div className={`w-9 h-9 rounded-full flex items-center justify-center transition-all shadow-lg ${workflowStep >= step.id ? 'bg-emerald-500 text-black shadow-emerald-900/20' : step.id === workflowStep + 1 ? 'bg-orange-500 text-black animate-pulse' : 'bg-zinc-900 text-zinc-600 border border-zinc-800'}`}>
-                                    {workflowStep >= step.id ? <CheckCircle size={18} /> : step.id}
-                                </div>
-                                <div className="flex-1 pt-1">
-                                    <h4 className={`text-base font-black tracking-tight ${workflowStep >= step.id ? 'text-white' : 'text-zinc-600'}`}>{step.title}</h4>
-                                    <p className={`text-xs mt-1 font-medium ${workflowStep >= step.id ? 'text-zinc-500' : 'text-zinc-700'}`}>{step.desc}</p>
-                                    
-                                    {/* Contextual Action Buttons */}
-                                    {step.id === workflowStep + 1 && workflowStep < 7 && (
-                                        <button onClick={nextStepLocal} className="mt-4 bg-orange-600 hover:bg-orange-500 text-black px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-orange-900/20 flex items-center gap-2">
-                                            Proceed to next step <ArrowRight size={12} />
-                                        </button>
+                        ].map((step) => {
+                            const isCompleted = workflowStep >= step.id;
+                            const isActive = step.id === workflowStep + 1 || (step.id === 7 && workflowStep === 7);
+                            const isFuture = !isCompleted && !isActive;
+
+                            return (
+                                <div key={step.id} className={`relative flex w-full items-center justify-between rounded-xl border pl-8 pr-4 py-2 transition-all ${
+                                    isCompleted ? 'bg-zinc-900/30 border-zinc-800/50 hover:bg-zinc-800/30' :
+                                    isActive ? 'bg-zinc-800/30 border-orange-500/50 shadow-md shadow-orange-500/5' :
+                                    'bg-zinc-900/10 border-zinc-800/30 opacity-60'
+                                }`}>
+                                    {/* Connector Line */}
+                                    {!isFuture && (
+                                        <div className={`absolute left-0 top-0 w-0.5 ${
+                                            isCompleted ? 'h-full bg-emerald-500' : 'h-full bg-gradient-to-b from-emerald-500 to-orange-500'
+                                        }`}></div>
                                     )}
-                                    {step.id === 7 && workflowStep === 7 && (
-                                        <button onClick={completeMaintenance} className="mt-4 bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-emerald-900/20 flex items-center gap-2">
-                                            Finalize Maintenance <CheckCircle size={12} />
-                                        </button>
-                                    )}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                    <div className="mt-8 pt-8 border-t border-zinc-800/50">
-                        <h4 className="text-[9px] font-black text-zinc-600 uppercase tracking-widest mb-4">Live Agent Event Logs</h4>
-                        <div className="h-32 overflow-y-auto space-y-2 pr-2 custom-scrollbar font-mono text-[10px]">
-                            {logs.length === 0 ? (
-                                <p className="text-zinc-700 italic">No agent activity logged.</p>
-                            ) : (
-                                logs.map((log, i) => (
-                                    <div key={i} className="text-zinc-500 border-l border-zinc-800 pl-3 py-0.5">
-                                        {log}
+
+                                    {/* Icon */}
+                                    <div className={`absolute left-[3px] flex h-4 w-4 items-center justify-center rounded-full bg-[#1c1a16] border-2 ${
+                                        isCompleted ? 'border-emerald-500 text-emerald-500' :
+                                        isActive ? 'border-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.3)]' :
+                                        'border-zinc-700'
+                                    }`}>
+                                        {isCompleted ? (
+                                            <CheckCircle size={10} />
+                                        ) : isActive ? (
+                                            <div className="h-1.5 w-1.5 rounded-full bg-orange-500 animate-pulse"></div>
+                                        ) : null}
                                     </div>
-                                ))
-                            )}
-                        </div>
+
+                                    {/* Content Left */}
+                                    <div className="flex flex-col">
+                                        <h4 className={`text-xs font-bold ${isCompleted ? 'text-white' : isActive ? 'text-orange-500' : 'text-zinc-500'}`}>
+                                            {step.id}. {step.title}
+                                        </h4>
+                                        {isActive && (
+                                            <p className="text-[9px] mt-0.5 text-zinc-400">
+                                                {step.desc}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    {/* Actions / Right Side */}
+                                    {isActive ? (
+                                        <div className="flex items-center gap-3">
+                                            <div className="flex items-center gap-1.5 rounded bg-orange-500/10 px-2 py-0.5">
+                                                <span className="h-1 w-1 rounded-full bg-orange-500 animate-ping"></span>
+                                                <span className="text-[8px] font-black text-orange-500 uppercase tracking-widest">ACTIVE</span>
+                                            </div>
+
+                                            {step.id === workflowStep + 1 && workflowStep < 7 && (
+                                                <button onClick={nextStepLocal} className="flex h-6 px-3 items-center justify-center rounded-md bg-orange-600 hover:bg-orange-500 text-black text-[9px] font-black uppercase tracking-widest transition-all shadow-md shadow-orange-900/20 gap-1.5">
+                                                    Proceed <ArrowRight size={10} />
+                                                </button>
+                                            )}
+                                            {step.id === 7 && workflowStep === 7 && (
+                                                <button onClick={completeMaintenance} className="flex h-6 px-3 items-center justify-center rounded-md bg-emerald-600 hover:bg-emerald-500 text-white text-[9px] font-black uppercase tracking-widest transition-all shadow-md shadow-emerald-900/20 gap-1.5">
+                                                    Finalize <CheckCircle size={10} />
+                                                </button>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <span className="text-[9px] text-zinc-600 font-medium">{step.desc}</span>
+                                    )}
+                                </div>
+                            );
+                        })}
                     </div>
                 </div>
 
@@ -256,6 +288,22 @@ const WorkflowView: React.FC<WorkflowViewProps> = ({
                             <button className="text-[10px] font-black text-orange-500 uppercase tracking-widest hover:text-orange-400 transition-colors">View Full Schematic</button>
                         </div>
                     </div>
+                </div>
+            </div>
+
+            {/* Full-Width Decoupled Execution Console */}
+            <div className="bg-[#1c1a16] border border-zinc-800/50 rounded-3xl p-6 flex flex-col">
+                <h4 className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-4">Live Agent Execution Console</h4>
+                <div className="h-48 overflow-y-auto space-y-2 pr-2 custom-scrollbar font-mono text-[10px]">
+                    {logs.length === 0 ? (
+                        <p className="text-zinc-700 italic">No agent activity logged.</p>
+                    ) : (
+                        logs.map((log, i) => (
+                            <div key={i} className="text-zinc-400 border-l border-zinc-800 pl-3 py-1">
+                                {log}
+                            </div>
+                        ))
+                    )}
                 </div>
             </div>
         </div>

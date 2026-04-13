@@ -1,5 +1,7 @@
 // src/features/command-center/types.ts
 
+import { EvidencePayload } from '@src/types';
+
 export type NotificationPriority = 'critical' | 'warning' | 'info';
 
 export interface AppNotification {
@@ -13,6 +15,7 @@ export interface AppNotification {
     };
     actions?: { label: string }[];
     status?: 'unread' | 'read' | 'acknowledged';
+    evidence?: EvidencePayload;
 }
 
 export interface FieldAgent {

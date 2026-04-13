@@ -221,3 +221,178 @@ Throughout this process, I aimed to be methodical, addressing one issue at a tim
 - **Reasoning:** To fulfill the user's request to synthesize the subdirectory READMEs and root-level files into a comprehensive top-level documentation file.
 - **Impact:** Centralized and enhanced repository structure and setup documentation.
 - **Verification:** Verified successful file overwrite and correct markdown formatting.
+
+---
+
+**Timestamp:** 2026-04-07 18:18:00
+- **Change Type:** Documentation
+- **Description:** Created `prd_settings.md` to detail the functional and non-functional specifications for a new Settings Configuration Panel.
+- **Reasoning:** To fulfill the user's request to generate a PRD covering SCADA telemetry control, Agentic Engine automation parameters, alert routing, and UI preferences.
+- **Impact:** Establishes a clear blueprint for implementing user settings within the Field Operations platform.
+- **Verification:** Verified successful creation of the PRD markdown document in the repository root.
+
+---
+
+**Timestamp:** 2026-04-09 18:46:00
+- **Change Type:** Documentation
+- **Description:** Merged `Changelog.md` into `prd.md` to establish `prd.md` as the single source of truth (master copy) containing all historical changes and requirements.
+- **Reasoning:** To consolidate documentation and reduce fragmentation across the project.
+- **Impact:** `prd.md` now contains the full revision history and changelog.
+- **Verification:** Verified successful append of the changelog section to `prd.md`.
+
+---
+
+**Timestamp:** 2026-04-09 20:20:00
+- **Change Type:** Documentation
+- **Description:** Updated `tdd.md` to fully specify the technical requirements and UI schemas for new files (`SettingsModal.tsx`, `ChallengeModal.tsx`, `ExplainabilityModal.tsx`, `mockData.ts`, and `useSafetyGuardrails.ts`) to ensure a complete implementation blueprint.
+- **Reasoning:** Addressed user feedback regarding underspecified UI definitions and intercept triggers for the new features.
+- **Impact:** `tdd.md` now provides a complete, actionable blueprint for the first-pass implementation of the safety guardrails and configuration features.
+- **Verification:** Verified markdown formatting and completeness of the document.
+
+---
+
+**Timestamp:** 2026-04-09 20:25:00
+- **Change Type:** Feature Implementation
+- **Description:** Implemented the Agentic triage and automation engine features as described in `tdd.md`.
+- **Logic Followed:**
+    1.  **Data & Types**: Expanded types to support `EvidencePayload` and `OverrideLog`, and created `src/mockData.ts`.
+    2.  **Safety Logic**: Abstracted interception and PIN validation to `useSafetyGuardrails` hook with `localStorage` persistence.
+    3.  **UI Modals**: Implemented `SettingsModal`, `ChallengeModal`, and `ExplainabilityModal` with correct triggers and styling.
+    4.  **Integration**: Woven all components into `src/App.tsx` including the critical alert passthrough mechanism.
+- **Impact:** Transformed the static application by adding interactive safety challenges and transparent anomaly explanations.
+- **Verification:** Verified successful production build (`tsc && vite build`).
+
+---
+
+**Timestamp:** 2026-04-11 21:32:00
+- **Change Type:** UI Redesign
+- **Description:** Redesigned the Workflow Timeline screen in `WorkflowView.tsx` to match the Stitch design specifications.
+- **Reasoning:** To transition the UI from a standard vertical scroll list to an industrial, status-aware timeline with connected progress lines and distinct active/completed visual states.
+- **Impact:** Improved visual hierarchy and clarity of the automated maintenance lifecycle steps.
+- **Verification:** Verified successful compilation without errors.
+
+---
+
+**Timestamp:** 2026-04-11 21:35:00
+- **Change Type:** Bug Fix
+- **Description:** Fixed conditional rendering logic in `WorkflowView.tsx` to ensure the "Finalize Maintenance" button remains visible when the workflow reaches the final step (Step 7).
+- **Reasoning:** The redesigned active-state check strictly expected `step.id === workflowStep + 1`, causing the final action block to be hidden when `workflowStep` hit the upper bound.
+- **Impact:** Users can now successfully complete the workflow and trigger the pipeline restoration sequence.
+- **Verification:** Verified build successfully passes.
+
+---
+
+**Timestamp:** 2026-04-11 21:38:00
+- **Change Type:** UI/UX Enhancement
+- **Description:** Completely removed vertical scrolling from the Workflow Timeline by converting the layout to a dense, horizontally optimized action grid.
+- **Reasoning:** To ensure the 7-step automated lifecycle and log console remain fully visible on standard monitors without requiring any user scrolling, maximizing immediate operational awareness.
+- **Impact:** Significant improvement in workspace ergonomics and situational visibility.
+- **Verification:** Verified production build successfully passes.
+
+---
+
+**Timestamp:** 2026-04-11 21:43:00
+- **Change Type:** UI/UX Feature
+- **Description:** Converted the Live Agent Event Logs footer into an interactive Accordion component inside `WorkflowView.tsx`.
+- **Reasoning:** To preserve the ultra-compact non-scrolling timeline layout while still allowing operators to drill down into the full historical log via an explicit user interaction.
+- **Impact:** Reduces visual footprint by default (showing only the latest status message) but provides access to the full 36-row height log context when expanded.
+- **Verification:** Verified clean build compilation.
+
+---
+
+**Timestamp:** 2026-04-11 21:47:00
+- **Change Type:** UI/UX Reversion
+- **Description:** Reverted the interactive log Accordion back to a permanently visible, fixed-height scrolling pane (`h-32`).
+- **Reasoning:** To address user feedback requesting that the live streaming agent logs remain instantly visible at all times without requiring manual toggle clicks.
+- **Impact:** Restores default constant visibility of the execution console while keeping the main workflow timeline steps horizontally compact.
+- **Verification:** Verified workspace builds cleanly without any unused import warnings.
+
+---
+
+**Timestamp:** 2026-04-11 21:53:00
+- **Change Type:** Layout Restructuring
+- **Description:** Completely decoupled the Live Agent Event Logs from the Workflow Timeline container in `WorkflowView.tsx`.
+- **Reasoning:** To isolate the 7-step workflow progression UI from execution logs, giving the event stream its own full-width container at the bottom of the page and allowing standard vertical browser scrolling across the entire workspace layout.
+- **Impact:** Enhances visual separation between timeline tracking and deep console diagnostics.
+- **Verification:** Verified production build passes cleanly.
+
+---
+
+**Timestamp:** 2026-04-11 21:56:00
+- **Change Type:** UI/UX Redesign
+- **Description:** Re-arranged the workspace interface into a strict half-screen split format: the left column now stacks a fixed-height scrolling Workflow Timeline directly atop a fixed-height log execution console, while the right column preserves the static SAP inventory and topology diagrams.
+- **Reasoning:** To perfectly balance system monitoring (Left Side) against technical schematics (Right Side) without overlapping components.
+- **Impact:** Restores focused, side-by-side vertical ergonomics.
+- **Verification:** Verified application compiles without any TS or lint errors.
+
+---
+
+**Timestamp:** 2026-04-11 22:01:00
+- **Change Type:** Layout Restructuring
+- **Description:** Decoupled the **Live Agent Event Logs** from the left monitoring column into an independent, full-width execution console at the absolute bottom of the screen.
+- **Reasoning:** To provide maximum screen real estate for diagnostic logs while enabling standard vertical page scrolling across the application.
+- **Impact:** Enhances workspace modularity and diagnostic accessibility.
+- **Verification:** Verified production build passes flawlessly.
+
+---
+
+**Timestamp:** 2026-04-11 22:04:00
+- **Change Type:** Bug Fix / UI Correction
+- **Description:** Removed the `overflow-hidden` constraints from the primary application grid wrapper in `WorkflowView.tsx`.
+- **Reasoning:** To ensure the pipeline flow topology and schematic diagrams remain fully visible when viewed on smaller viewports where the columns wrap vertically.
+- **Impact:** All structural layouts and execution logs are now fully accessible regardless of monitor resolution.
+- **Verification:** Verified application builds without errors.
+
+---
+
+**Timestamp:** 2026-04-13 00:57:00
+- **Change Type:** Technical Documentation
+- **Description:** Created a comprehensive `README.md` within `src/components/auth` per the provided template structure.
+- **Reasoning:** To formally outline the authentication and supervisor override logic, providing explicit details on edge-case handling (e.g., UI shake triggers, failed PIN submission workflows) for future developer onboarding.
+- **Impact:** Improves project maintainability and structural clarity.
+- **Verification:** Verified application builds cleanly.
+
+---
+
+**Timestamp:** 2026-04-13 01:06:00
+- **Change Type:** Technical Documentation
+- **Description:** Created a detailed `README.md` inside `src/components/explainability` strictly adhering to the standard template.
+- **Reasoning:** To establish a clear usage reference for the `ExplainabilityModal.tsx` anomaly evaluation interface, ensuring incoming engineers understand its null-short-circuiting mechanisms and dynamic telemetry rendering behaviors.
+- **Impact:** Standardizes diagnostic reporting references across the frontend architecture.
+- **Verification:** Verified application compiles perfectly.
+
+---
+
+**Timestamp:** 2026-04-13 01:52:00
+- **Change Type:** Technical Documentation
+- **Description:** Created a robust, agent-focused `README.md` inside `src/components/layout` adhering strictly to the advanced template requirements.
+- **Reasoning:** To firmly establish the "Front Door" entry boundary contracts for the primary layout module (`SidebarItem.tsx`), complete with explicit proof-of-work reasoning traces and side-effect transparency audits for incoming system integrators.
+- **Impact:** Strengthens architectural encapsulation and readability across UI boundary shells.
+- **Verification:** Verified production build passes flawlessly.
+
+---
+
+**Timestamp:** 2026-04-13 01:58:00
+- **Change Type:** Technical Documentation
+- **Description:** Created an advanced, agentic `README.md` inside `src/components/settings` detailing the operational mechanisms of `SettingsModal.tsx`.
+- **Reasoning:** To guarantee complete architectural transparency surrounding the autonomous 60-second watchdog countdown timer, global window listener cleanups, and state interface boundaries per the strict template guidelines.
+- **Impact:** Fulfills standard documentation requirements and secures background task lifecycle definitions.
+- **Verification:** Verified application builds completely without errors.
+
+---
+
+**Timestamp:** 2026-04-13 02:00:00
+- **Change Type:** Technical Documentation
+- **Description:** Created an agentic `README.md` within `src/components/shared` documenting the stateless UI badge mapping parameters of `StatusBadge.tsx`.
+- **Reasoning:** To establish clear interface boundary definitions and map telemetry fallbacks explicitly per the newly enforced template system contracts.
+- **Impact:** Completes shared component usage transparency for downstream integrators.
+- **Verification:** Verified workspace builds cleanly without errors.
+
+---
+
+**Timestamp:** 2026-04-13 02:10:00
+- **Change Type:** Technical Documentation
+- **Description:** Generated a highly robust master component reference document at `src/components/README.md` recursively aggregating the exact interface parameters, side-effect constraints, and usage examples from all nested UI subdirectories (Auth, Explainability, Layout, Settings, and Shared).
+- **Reasoning:** To establish a single unified reference architecture for incoming engineers, explicitly satisfying the required proof-of-work definitions across all frontend micro-elements.
+- **Impact:** Maximizes developer onboarding efficiency and architectural standard enforcement.
+- **Verification:** Verified production builds completely without errors.
