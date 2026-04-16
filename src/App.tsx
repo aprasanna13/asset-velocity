@@ -14,7 +14,7 @@ import {
     Shield
 } from 'lucide-react';
 
-import { ScadaData, PipelineNode, ExecutionLog } from '@src/types';
+import { ScadaData, PipelineNode, ExecutionLog, EvidencePayload } from '@src/types';
 import SidebarItem from '@src/components/layout/SidebarItem';
 import DashboardView from '@src/features/scada-triage/components/DashboardView';
 import InventoryView from '@src/features/maintenance/components/InventoryView';
@@ -73,7 +73,7 @@ const INITIAL_NOTIFICATIONS: AppNotification[] = [
     }
 ];
 
-const App = () => {
+export const App = () => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [isCommandCenterOpen, setIsCommandCenterOpen] = useState(false);
     const [notifications, setNotifications] = useState<AppNotification[]>([...mockNotifications, ...INITIAL_NOTIFICATIONS]);
@@ -90,7 +90,7 @@ const App = () => {
     // Safety Guardrails State
     const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
     const [isExplainOpen, setIsExplainOpen] = useState<boolean>(false);
-    const [activeEvidence, setActiveEvidence] = useState<any>(null);
+    const [activeEvidence, setActiveEvidence] = useState<EvidencePayload | null>(null);
 
     const {
         isChallengeOpen,
@@ -360,5 +360,3 @@ const App = () => {
         </div>
     );
 };
-
-export default App;
