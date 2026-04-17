@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { InventoryItem } from '@src/types'; // Import InventoryItem type
 
-const STATIC_INVENTORY: InventoryItem[] = [
+export const STATIC_INVENTORY: InventoryItem[] = [
     { id: 1, model_compatibility: 'High-Flow Centrifugal', part_number: 'GASK-9921-X', description: 'Compressor Valve Gasket Kit', stock_level: 12, lead_time_days: 0, warehouse_id: 'TX-S-04', status: 'Available' },
     { id: 2, model_compatibility: 'High-Flow Centrifugal', part_number: 'SEAL-HT-44', description: 'High-Temp Main Shaft Seal', stock_level: 4, lead_time_days: 2, warehouse_id: 'TX-S-04', status: 'Low Stock' },
     { id: 3, model_compatibility: 'High-Flow Centrifugal', part_number: 'LUBE-SYN-Q', description: 'Synthetic Lubricant (5 Gal)', stock_level: 25, lead_time_days: 0, warehouse_id: 'TX-S-04', status: 'Available' },

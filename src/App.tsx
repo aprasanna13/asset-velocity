@@ -5,7 +5,6 @@ import {
     Activity,
     AlertTriangle,
     Settings,
-    Search,
     Bell,
     User,
     Zap,
@@ -32,6 +31,9 @@ import { ChallengeModal } from './components/auth/ChallengeModal';
 import { ExplainabilityModal } from './components/explainability/ExplainabilityModal';
 import { useSafetyGuardrails } from './hooks/useSafetyGuardrails';
 import { mockNotifications, initialOverrideLogs } from './mockData';
+import { SearchProvider } from './components/Search/SearchContext';
+import { SearchBar } from './components/Search/SearchBar';
+
 
 // --- MOCK DATA ---
 const INITIAL_SCADA_STREAM: ScadaData[] = [
@@ -164,7 +166,8 @@ export const App = () => {
             {!isAuthenticated && <Login onLogin={handleLogin} />}
             
             {isAuthenticated && (
-                <>
+                <SearchProvider onNavigate={setActiveTab}>
+                    <>
                     {/* Sidebar */}
                     <div className={`w-64 border-r flex flex-col p-6 z-20 bg-[#0d0d0d] border-zinc-900`}>
                         <div className="flex items-center gap-3 mb-12">
@@ -197,10 +200,7 @@ export const App = () => {
                     <div className="flex-1 flex flex-col relative overflow-hidden">
                         {/* Header */}
                         <header className={`h-20 flex items-center justify-between px-10 border-b z-10 bg-[#0d0d0d]/80 border-zinc-900/50 backdrop-blur-md`}>
-                            <div className={`flex items-center gap-4 px-4 py-2 rounded-xl border w-96 bg-zinc-900/50 border-zinc-800/50`}>
-                                <Search size={18} className="text-zinc-600" />
-                                <input type="text" placeholder="Search Assets..." className={`bg-transparent border-none outline-none text-sm placeholder-zinc-600 w-full text-white`} />
-                            </div>
+                            <SearchBar logs={logs} nodes={nodes} currentTab={activeTab} />
 
                             <div className="flex items-center gap-10 text-right">
                                 <div className="flex flex-col">
@@ -355,7 +355,8 @@ export const App = () => {
                             <span>🚨 CRITICAL PIPELINE ANOMALY DETECTED! CLOSE SETTINGS IMMEDIATELY!</span>
                         </div>
                     )}
-                </>
+                    </>
+                </SearchProvider>
             )}
         </div>
     );

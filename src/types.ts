@@ -92,3 +92,14 @@ export interface ExecutionLog {
     payload?: StructuredLogPayload;
 }
 
+export interface SearchResult {
+    id: string;
+    title: string;
+    subtitle?: string;
+    type: 'log' | 'part' | 'node';
+    action: {
+        type: 'NAVIGATE' | 'OPEN_DRAWER' | 'HIGHLIGHT_MAP';
+        payload: unknown;
+    };
+}
+

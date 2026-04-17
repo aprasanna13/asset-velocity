@@ -181,3 +181,37 @@ import { ExecutionConsole } from './components/ExecutionConsole/ExecutionConsole
 <ExecutionConsole logs={structuredLogs} />
 ```
 
+---
+
+## 7. Search Subsystem (`src/components/Search`)
+
+This directory contains the context-aware, categorized global search feature.
+
+### Purpose
+Enabling operators to find assets, logs, and nodes from any screen without losing situational awareness, using fuzzy search and context-based prioritization.
+
+### Contents
+*   `SearchContext.tsx`: React Context for managing search state and actions.
+*   `useSearch.ts`: Custom hook handling search logic, debouncing, and prioritization.
+*   `SearchBar.tsx`: UI component for the search input and results dropdown.
+*   `adapters/inventoryAdapter.ts`: Adapter for searching inventory items.
+*   `adapters/logAdapter.ts`: Adapter for searching execution logs.
+*   `adapters/nodeAdapter.ts`: Adapter for searching topology nodes.
+
+### Implementation Details
+- **Fuzzy Search**: Uses `Fuse.js` for approximate string matching.
+- **Debouncing**: Waits 300ms after user stops typing before searching.
+- **Prioritization**: Boosts results relevant to the current active tab.
+- **Actions**: Supports `NAVIGATE`, `OPEN_DRAWER`, and `HIGHLIGHT_MAP`.
+
+### Usage Examples
+```tsx
+import { SearchProvider } from './components/Search/SearchContext';
+import { SearchBar } from './components/Search/SearchBar';
+
+// In App.tsx
+<SearchProvider onNavigate={setActiveTab}>
+    <SearchBar logs={logs} nodes={nodes} currentTab={activeTab} />
+</SearchProvider>
+```
+

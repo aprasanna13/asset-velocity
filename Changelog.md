@@ -4,6 +4,18 @@ This document logs the major changes and features added to the **Field Operation
 
 ---
 
+## [2026-04-17] - Implementation
+- **Feature**: Implemented Context-Aware Categorized Global Search with Fuse.js.
+- **Feature**: Created `SearchContext`, `useSearch` hook, and `SearchBar` component.
+- **Feature**: Implemented adapters for Inventory, Logs, and Nodes.
+- **Integration**: Integrated `SearchBar` into `App.tsx` header.
+- **Documentation**: Updated `src/components/README.md` with search documentation.
+- **Bug Fix**: Fixed issue where clicking search results did not navigate to the corresponding screen.
+
+## [2026-04-17]
+- **Documentation**: Updated `cr_search.md` with agreed implementation details for the Global Search feature.
+- **Documentation**: Further refined `cr_search.md` with specifics on Fuse.js, Context location, and action handling.
+
 ## [2026-04-16]
 - **Documentation**: Updated `src/README.md` and `src/components/README.md` to include the `ExecutionConsole` and `handoff` features.
 
