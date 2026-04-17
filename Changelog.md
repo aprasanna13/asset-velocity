@@ -4,6 +4,9 @@ This document logs the major changes and features added to the **Field Operation
 
 ---
 
+## [2026-04-16]
+- **Documentation**: Updated `src/README.md` and `src/components/README.md` to include the `ExecutionConsole` and `handoff` features.
+
 ## [2026-04-15]
 - **Configuration**: Added `gchat` and `g3doc_documentation` skills to the user's personal `skills.json` configuration in CitC workspaces.
 - **Refactor**: Applied `ts_readability` fixes to `src/App.tsx` (removed `any` type, converted to named export).

@@ -19,12 +19,14 @@ Contains static media files used across the frontend.
 ### `components/`
 Contains reusable UI components shared across multiple features or layouts.
 - `auth/Login.tsx`: The secure authentication gateway and login screen.
+- `ExecutionConsole/`: Components for the high-performance, interactive execution console and log viewer.
 - `layout/SidebarItem.tsx`: A reusable navigation link item for the primary application sidebar.
 - `shared/StatusBadge.tsx`: A visual badge component for rendering the operational or health status of a system component.
 
 ### `features/`
 Contains specific functional zones and domain logic for the application views.
 - `command-center/`: Components and logic for the notification flyout and real-time system triage alerts.
+- `handoff/`: Components for automated operational briefing and shift handover safety checks.
 - `maintenance/`: Components for the maintenance workflow, tracking repairs, and technician instructions.
 - `scada-triage/`: Interactive monitoring interfaces and SCADA anomaly detection views.
 - `topology/`: SVG-based dynamic network and pipeline topology visualizations.

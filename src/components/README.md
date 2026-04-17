@@ -153,3 +153,31 @@ import StatusBadge from './components/shared/StatusBadge';
 
 <StatusBadge status="Critical Alert" />
 ```
+
+---
+
+## 6. Execution Console Subsystem (`src/components/ExecutionConsole`)
+
+This directory contains the high-performance, interactive execution console for rendering structured logs.
+
+### Purpose
+Replacing static log outputs with an interactive, filtered, and auto-scrolling diagnostic console to monitor agent operations and system events.
+
+### Contents
+*   `ExecutionConsole.tsx`: The primary container for the log viewer.
+*   `LogAdapter.ts`: Utility to parse raw string logs into structured formats.
+*   `LogRow.tsx`: Optimized component for rendering individual log entries.
+*   `LogDetailModal.tsx`: Modal for viewing detailed log payloads.
+
+### Implementation Details
+- **Performance**: Uses `React.memo` for `LogRow` to prevent unnecessary re-renders.
+- **Memory Management**: Enforces a 50-item limit for log retention (ring buffer).
+- **UX**: Supports unconditional auto-scrolling to the bottom and severity-based color coding.
+
+### Usage Examples
+```tsx
+import { ExecutionConsole } from './components/ExecutionConsole/ExecutionConsole';
+
+<ExecutionConsole logs={structuredLogs} />
+```
+
