@@ -20,6 +20,7 @@ import InventoryView from '@src/features/maintenance/components/InventoryView';
 import AlertsView from '@src/features/scada-triage/components/AlertsView';
 import WorkflowView from '@src/features/maintenance/components/WorkflowView';
 import TopologyView from '@src/features/topology/components/TopologyView';
+import GeographicTopologyView from '@src/features/topology/components/GeographicTopologyView';
 import { HandoffContainer } from '@src/features/handoff/HandoffContainer';
 import { parseRawLogToStructured } from './components/ExecutionConsole/LogAdapter';
 import useInventory from '@src/hooks/useInventory';
@@ -81,6 +82,7 @@ export const App = () => {
     const [notifications, setNotifications] = useState<AppNotification[]>([...mockNotifications, ...INITIAL_NOTIFICATIONS]);
     const [isSimulating, setIsSimulating] = useState(false);
     const [activeTab, setActiveTab] = useState('dashboard');
+    const [topologyViewMode, setTopologyViewMode] = useState<'schematic' | 'geographic'>('schematic');
     const [stream, setStream] = useState<ScadaData[]>(INITIAL_SCADA_STREAM);
     const [alerts, setAlerts] = useState<ScadaData[]>([]);
     const [activeWorkflow, setActiveWorkflow] = useState<ScadaData | null>(null);
@@ -289,11 +291,36 @@ export const App = () => {
 
                             {/* PIPELINE TOPOLOGY (Tab 'nodes') - Image 3 */}
                             {activeTab === 'nodes' && (
-                                <TopologyView
-                                    alerts={alerts}
-                                    nodes={nodes}
-                                    workflowStep={workflowStep}
-                                />
+                                <div className="flex flex-col h-full gap-4">
+                                    <div className="flex justify-end gap-2">
+                                        <button 
+                                            onClick={() => setTopologyViewMode('schematic')}
+                                            className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-colors ${topologyViewMode === 'schematic' ? 'bg-orange-600 text-white' : 'bg-zinc-900 text-zinc-400 hover:text-white'}`}
+                                        >
+                                            Schematic
+                                        </button>
+                                        <button 
+                                            onClick={() => setTopologyViewMode('geographic')}
+                                            className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-colors ${topologyViewMode === 'geographic' ? 'bg-orange-600 text-white' : 'bg-zinc-900 text-zinc-400 hover:text-white'}`}
+                                        >
+                                            Geographic
+                                        </button>
+                                    </div>
+                                    <div className="flex-1 min-h-0">
+                                        {topologyViewMode === 'schematic' ? (
+                                            <TopologyView
+                                                alerts={alerts}
+                                                nodes={nodes}
+                                                workflowStep={workflowStep}
+                                            />
+                                        ) : (
+                                            <GeographicTopologyView
+                                                alerts={alerts}
+                                                nodes={nodes}
+                                            />
+                                        )}
+                                    </div>
+                                </div>
                             )}
                          </main>
                     </div>

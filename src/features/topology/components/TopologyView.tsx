@@ -1,5 +1,5 @@
 // @ts-nocheck
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { ScadaData, PipelineNode } from '@src/types'; // Changed import path
 import {
     AlertTriangle,
@@ -17,6 +17,138 @@ interface TopologyViewProps {
 }
 
 const TopologyView: React.FC<TopologyViewProps> = ({ alerts, nodes, workflowStep }) => {
+    const canvasRef = useRef<HTMLCanvasElement>(null);
+
+    useEffect(() => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+
+        const drawNode = (ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, name: string, id: string, status?: string) => {
+            // Rounded rect
+            ctx.beginPath();
+            ctx.roundRect(x, y, w, h, 32);
+            ctx.fillStyle = '#0d0d0d';
+            ctx.fill();
+            
+            ctx.strokeStyle = status === 'Maintenance' ? '#ef4444' : status?.includes('Boosted') ? '#3b82f6' : '#10b981';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Inner box for icon
+            ctx.beginPath();
+            ctx.roundRect(x + 35, y + 20, 50, 50, 14);
+            ctx.fillStyle = status === 'Maintenance' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)';
+            ctx.fill();
+
+            // Text
+            ctx.textAlign = 'center';
+            ctx.fillStyle = '#444';
+            ctx.font = '800 9px sans-serif';
+            ctx.fillText(name.toUpperCase(), x + w / 2, y + 85);
+
+            ctx.fillStyle = 'white';
+            ctx.font = '900 10px sans-serif';
+            ctx.fillText(id.toUpperCase(), x + w / 2, y + 100);
+
+            // Status badge
+            ctx.fillStyle = status === 'Maintenance' ? '#ef4444' : 'rgba(16, 185, 129, 0.2)';
+            ctx.beginPath();
+            ctx.roundRect(x + 15, y + 130, 90, 18, 6);
+            ctx.fill();
+            
+            ctx.fillStyle = status === 'Maintenance' ? 'white' : '#10b981';
+            ctx.font = '900 7px sans-serif';
+            ctx.fillText(status === 'Maintenance' ? 'MAINTENANCE REQUIRED' : 'OPERATIONAL', x + w / 2, y + 142);
+        };
+
+        let animationFrameId: number;
+
+        const render = () => {
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw connections
+            // Line 1: 200,225 to 400,100
+            ctx.beginPath();
+            ctx.moveTo(200, 225);
+            ctx.lineTo(400, 100);
+            ctx.strokeStyle = '#ef4444';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([6, 6]);
+            ctx.globalAlpha = 0.3;
+            ctx.stroke();
+            ctx.globalAlpha = 1.0;
+            ctx.setLineDash([]);
+
+            // Line 2: 200,225 to 400,350
+            ctx.beginPath();
+            ctx.moveTo(200, 225);
+            ctx.lineTo(400, 350);
+            ctx.strokeStyle = '#ef4444';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([6, 6]);
+            ctx.globalAlpha = 0.3;
+            ctx.stroke();
+            ctx.globalAlpha = 1.0;
+            ctx.setLineDash([]);
+
+            // Animated lines (flowing)
+            ctx.beginPath();
+            ctx.moveTo(400, 100);
+            ctx.lineTo(650, 225);
+            ctx.strokeStyle = '#3b82f6';
+            ctx.lineWidth = 4;
+            ctx.setLineDash([10, 2]);
+            ctx.lineDashOffset = -Date.now() / 50 % 12;
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            ctx.beginPath();
+            ctx.moveTo(400, 350);
+            ctx.lineTo(650, 225);
+            ctx.strokeStyle = '#3b82f6';
+            ctx.lineWidth = 4;
+            ctx.setLineDash([10, 2]);
+            ctx.lineDashOffset = -Date.now() / 50 % 12;
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Draw Nodes
+            if (nodes && nodes.length >= 3) {
+                drawNode(ctx, 140, 165, 120, 120, nodes[0].name, nodes[0].id, nodes[0].status);
+                drawNode(ctx, 340, 40, 120, 120, nodes[1].name, nodes[1].id, nodes[1].status);
+                drawNode(ctx, 340, 290, 120, 120, nodes[2].name, nodes[2].id, nodes[2].status);
+            }
+
+            // Distribution Node
+            ctx.beginPath();
+            ctx.arc(600 + 60, 165 + 60, 50, 0, Math.PI * 2);
+            ctx.fillStyle = '#0d0d0d';
+            ctx.fill();
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+            
+            ctx.fillStyle = 'white';
+            ctx.font = '900 11px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('MAIN HUB ALPHA', 600 + 60, 165 + 60 + 15);
+            ctx.fillStyle = '#444';
+            ctx.font = '800 9px sans-serif';
+            ctx.fillText('DISTRIBUTION', 600 + 60, 165 + 60 + 0);
+
+            animationFrameId = requestAnimationFrame(render);
+        };
+
+        render();
+
+        return () => {
+            cancelAnimationFrame(animationFrameId);
+        };
+    }, [nodes, alerts]);
+
     return (
         <div className="flex flex-col h-full gap-8 animate-in zoom-in-95 duration-500">
             <div className="flex justify-between items-end">
@@ -43,7 +175,7 @@ const TopologyView: React.FC<TopologyViewProps> = ({ alerts, nodes, workflowStep
 
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 flex-1 overflow-hidden">
                 {/* Network Stats Column */}
-                <div className="lg:col-span-1 space-y-6 flex flex-col">
+                <div className="lg:col-span-1 space-y-6 flex flex-col overflow-y-auto">
                     <div className="bg-[#1c1a16] border border-zinc-800/50 rounded-3xl p-8">
                         <p className="text-zinc-600 text-[10px] font-black uppercase tracking-widest mb-1">Target Flow</p>
                         <p className="text-3xl font-black text-white tracking-tighter">500.0 <span className="text-sm font-bold text-zinc-600 ml-1">MMcf/d</span></p>
@@ -74,90 +206,12 @@ const TopologyView: React.FC<TopologyViewProps> = ({ alerts, nodes, workflowStep
                     <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, #fff 1px, transparent 1px)', backgroundSize: '32px 32px' }}></div>
                     
                     <div className="relative w-full max-w-3xl aspect-[16/9]">
-                        <svg className="w-full h-full overflow-visible" viewBox="0 0 800 450">
-                            {/* Connections */}
-                            <line x1="200" y1="225" x2="400" y2="100" stroke="#ef4444" strokeWidth="2" strokeDasharray="6" className="opacity-30" />
-                            <line x1="200" y1="225" x2="400" y2="350" stroke="#ef4444" strokeWidth="2" strokeDasharray="6" className="opacity-30" />
-                            <line x1="400" y1="100" x2="650" y2="225" stroke="#3b82f6" strokeWidth="4" strokeDasharray="10 2" className="animate-[dash_20s_linear_infinite]" />
-                            <line x1="400" y1="350" x2="650" y2="225" stroke="#3b82f6" strokeWidth="4" strokeDasharray="10 2" className="animate-[dash_20s_linear_infinite]" />
-
-                            <style>{`
-                                @keyframes dash {
-                                    to { stroke-dashoffset: -1000; }
-                                }
-                            `}</style>
-
-                                                                        {/* Node 1 - Critical */}
-                                                                        <g transform="translate(140, 165)">
-                                                                            <filter id="shadow1" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur in="SourceAlpha" stdDeviation="5"/><feOffset dx="0" dy="4"/><feComponentTransfer><feFuncA type="linear" slope="0.1"/></feComponentTransfer><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-                                                                            <rect width="120" height="120" rx="32" fill="#0d0d0d" filter="url(#shadow1)" stroke={nodes[0].status === 'Maintenance' ? '#ef4444' : '#10b981'} strokeWidth="2" />
-                                                                            <rect x="35" y="20" width="50" height="50" rx="14" fill={nodes[0].status === 'Maintenance' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)'} />
-                                                                            {nodes[0].status === 'Maintenance' ? <AlertTriangle x="47" y="32" size={26} className="text-red-500" /> : <ShieldCheck x="47" y="32" size={26} className="text-emerald-500" />}
-                                                                            <text x="60" y="85" textAnchor="middle" fontSize="9" fontWeight="800" fill="#444" className="uppercase tracking-widest">{nodes[0].name}</text>
-                                                                            <text x="60" y="100" textAnchor="middle" fontSize="10" fontWeight="900" fill="white" className="tracking-tight uppercase">{nodes[0].id}</text>
-                                                                            {nodes[0].status === 'Maintenance' ? (
-                                                                                <>
-                                                                                    <rect x="15" y="130" width="90" height="18" rx="6" fill="#ef4444" />
-                                                                                    <text x="60" y="142" textAnchor="middle" fontSize="7" fontWeight="900" fill="white" className="uppercase tracking-widest">Maintenance Required</text>
-                                                                                </>
-                                                                            ) : (
-                                                                                <>
-                                                                                    <rect x="30" y="130" width="60" height="18" rx="6" fill="rgba(16, 185, 129, 0.2)" />
-                                                                                    <text x="60" y="142" textAnchor="middle" fontSize="7" fontWeight="900" fill="#10b981" className="uppercase tracking-widest">Operational</text>
-                                                                                </>
-                                                                            )}
-                                                                            <circle cx="105" cy="15" r="5" fill={nodes[0].status === 'Maintenance' ? '#ef4444' : '#10b981'} className={nodes[0].status === 'Maintenance' ? "animate-pulse" : ""} />
-                                                                        </g>
-                                            
-                                                                        {/* Node 2 - Compensating */}
-                                                                        <g transform="translate(340, 40)">
-                                                                            <rect width="120" height="120" rx="32" fill="#0d0d0d" filter="url(#shadow1)" stroke={nodes[1].status.includes('Boosted') ? '#3b82f6' : '#10b981'} strokeWidth="2" />
-                                                                            <rect x="35" y="20" width="50" height="50" rx="14" fill={nodes[1].status.includes('Boosted') ? 'rgba(59, 130, 246, 0.1)' : 'rgba(16, 185, 129, 0.1)'} />
-                                                                            {nodes[1].status.includes('Boosted') ? <Zap x="47" y="32" size={26} className="text-blue-500" /> : <ShieldCheck x="47" y="32" size={26} className="text-emerald-500" />}
-                                                                            <text x="60" y="85" textAnchor="middle" fontSize="9" fontWeight="800" fill="#444" className="uppercase tracking-widest">{nodes[1].name}</text>
-                                                                            <text x="60" y="100" textAnchor="middle" fontSize="10" fontWeight="900" fill="white" className="tracking-tight uppercase">{nodes[1].id}</text>
-                                                                            {nodes[1].status.includes('Boosted') ? (
-                                                                                <>
-                                                                                    <rect x="30" y="130" width="60" height="18" rx="6" fill="rgba(59, 130, 246, 0.2)" />
-                                                                                    <text x="60" y="142" textAnchor="middle" fontSize="7" fontWeight="900" fill="#3b82f6" className="uppercase tracking-widest">Compensating</text>
-                                                                                    <text x="60" y="162" textAnchor="middle" fontSize="10" fontWeight="900" fill="#3b82f6" className="tracking-tight">● {nodes[1].current.toFixed(1)} MMcf</text>
-                                                                                </>
-                                                                            ) : (
-                                                                                <>
-                                                                                    <rect x="30" y="130" width="60" height="18" rx="6" fill="rgba(16, 185, 129, 0.2)" />
-                                                                                    <text x="60" y="142" textAnchor="middle" fontSize="7" fontWeight="900" fill="#10b981" className="uppercase tracking-widest">Healthy</text>
-                                                                                </>
-                                                                            )}
-                                                                        </g>
-                                            
-                                                                        {/* Node 3 - Compensating */}
-                                                                        <g transform="translate(340, 290)">
-                                                                            <rect width="120" height="120" rx="32" fill="#0d0d0d" filter="url(#shadow1)" stroke={nodes[2]?.status.includes('Boosted') ? '#3b82f6' : '#10b981'} strokeWidth="2" />
-                                                                            <rect x="35" y="20" width="50" height="50" rx="14" fill={nodes[2]?.status.includes('Boosted') ? 'rgba(59, 130, 246, 0.1)' : 'rgba(16, 185, 129, 0.1)'} />
-                                                                            {nodes[2]?.status.includes('Boosted') ? <Zap x="47" y="32" size={26} className="text-blue-500" /> : <ShieldCheck x="47" y="32" size={26} className="text-emerald-500" />}
-                                                                            <text x="60" y="85" textAnchor="middle" fontSize="9" fontWeight="800" fill="#444" className="uppercase tracking-widest">{nodes[2]?.name}</text>
-                                                                            <text x="60" y="100" textAnchor="middle" fontSize="10" fontWeight="900" fill="white" className="tracking-tight uppercase">{nodes[2]?.id}</text>
-                                                                            {nodes[2]?.status.includes('Boosted') ? (
-                                                                                <>
-                                                                                    <rect x="30" y="130" width="60" height="18" rx="6" fill="rgba(59, 130, 246, 0.2)" />
-                                                                                    <text x="60" y="142" textAnchor="middle" fontSize="7" fontWeight="900" fill="#3b82f6" className="uppercase tracking-widest">Compensating</text>
-                                                                                    <text x="60" y="162" textAnchor="middle" fontSize="10" fontWeight="900" fill="#3b82f6" className="tracking-tight">● {nodes[2]?.current.toFixed(1)} MMcf</text>
-                                                                                </>
-                                                                            ) : (
-                                                                                <>
-                                                                                    <rect x="30" y="130" width="60" height="18" rx="6" fill="rgba(16, 185, 129, 0.2)" />
-                                                                                    <text x="60" y="142" textAnchor="middle" fontSize="7" fontWeight="900" fill="#10b981" className="uppercase tracking-widest">Healthy</text>
-                                                                                </>
-                                                                            )}
-                                                                        </g>
-                                                                                        {/* Distribution Node */}
-                                            <g transform="translate(600, 165)">
-                                                <circle cx="60" cy="60" r="50" fill="#0d0d0d" filter="url(#shadow1)" stroke="#333" strokeWidth="1" />
-                                                <ArrowRight x="47" y="47" size={26} className="text-zinc-700" />
-                                                <text x="60" y="130" textAnchor="middle" fontSize="9" fontWeight="800" fill="#444" className="uppercase tracking-widest">Distribution</text>
-                                                <text x="60" y="145" textAnchor="middle" fontSize="11" fontWeight="900" fill="white" className="tracking-tighter uppercase">Main Hub Alpha</text>
-                                            </g>
-                                        </svg>
+                        <canvas
+                            ref={canvasRef}
+                            width={800}
+                            height={450}
+                            className="w-full h-full"
+                        />
                                     </div>
 
                                     {/* Legend Overlay */}

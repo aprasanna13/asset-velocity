@@ -12,13 +12,15 @@
     "deploy": "npm install && npm run build && npm start"
   },
   "dependencies": {
+    "@googlemaps/react-wrapper": "^1.2.0",
     "@solana/web3.js": "^1.98.4",
     "better-sqlite3": "^12.6.2",
     "express": "^5.2.1",
     "fuse.js": "^7.3.0",
     "lucide-react": "^0.395.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "simplify-js": "^1.2.4"
   },
   "devDependencies": {
     "@types/react": "^18.2.66",

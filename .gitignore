@@ -1,3 +1,4 @@
 node_modules
 keytest.pub
 keytest
+.env

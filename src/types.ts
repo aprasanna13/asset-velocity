@@ -28,6 +28,8 @@ export interface PipelineNode {
     role: "Primary" | "Backup" | "Distribution";
     status: "Active" | "Maintenance" | "Active (Boosted)" | "Normal" | "Compensating";
     name: string;
+    lat?: number;
+    lng?: number;
 }
 
 export interface EvidencePayload {

@@ -59,3 +59,41 @@ This document logs the major changes and features added to the **Field Operation
 ## [2026-02-20]
 - **Chore**: Resolved initial deployment compilation and TypeScript errors.
 - **Chore**: Migrated container registry from GCR to Artifact Registry and configured proper IAM permissions.
+
+## [2026-04-17] - Canvas Topology View
+- **Refactor**: Refactored `TopologyView.tsx` to use HTML5 Canvas for rendering the network graph.
+- **Feature**: Implemented smooth flow animations using canvas line dash offset.
+
+## [2026-04-17] - Layout Fix
+- **Fix**: Added localized scrolling (`overflow-y-auto`) to the data column in `TopologyView.tsx` to prevent clipping on short viewports.
+
+## [2026-04-17] - Design
+- **Documentation**: Created `cr_googlemaps.md` design document for Google Maps integration (Section 0).
+
+## [2026-04-17] - Design Update
+- **Documentation**: Added Section 1 to `cr_googlemaps.md` describing the high-level plan.
+
+## [2026-04-17] - Design Finalized
+- **Documentation**: Added Section 2 to `cr_googlemaps.md` with a detailed file-by-file implementation plan.
+
+## [2026-04-17] - Security Update
+- **Documentation**: Updated `cr_googlemaps.md` to specify API key storage using environment variables and `.env.example`.
+
+## [2026-04-18] - Design Update
+- **Documentation**: Updated `cr_googlemaps.md` with specific details: component props, library choice for line simplification, mock data for Texas network, custom dark theme map styles, and acceptance criteria.
+
+## [2026-04-18] - Implementation
+- **Feature**: Implemented Geographic Map View with Google Maps and HTML5 Canvas overlay.
+- **Feature**: Added view switcher in `App.tsx` to toggle between Schematic and Geographic views.
+- **Chore**: Installed `@googlemaps/react-wrapper` and `simplify-js`.
+- **Configuration**: Created `.env` and `.env.example` for API key management.
+
+## [2026-04-18] - Fix
+- **Fix**: Added visible fallback polylines and click interaction (InfoWindow) to markers in `GeographicTopologyView`.
+- **Fix**: Moved canvas overlay to `floatPane` to ensure it renders above the map.
+
+## [2026-04-18] - Fix
+- **Fix**: Moved canvas overlay back to `overlayLayer` with high z-index and added finite checks to prevent artifact rendering.
+
+## [2026-04-18] - Fix
+- **Fix**: Added off-screen and extreme coordinate checks in canvas drawing to prevent random line artifacts.
