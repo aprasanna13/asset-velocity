@@ -97,3 +97,11 @@ This document logs the major changes and features added to the **Field Operation
 
 ## [2026-04-18] - Fix
 - **Fix**: Added off-screen and extreme coordinate checks in canvas drawing to prevent random line artifacts.
+
+## [2026-04-20] - Feature
+- **UI**: Changed the application tab icon (favicon) to the actual application logo `Logo.png`.
+
+## [2026-04-21] - Documentation
+- **Documentation**: Created `AGENTS.md` following the Gemini file guide standard for AI agents.
+- **Documentation**: Added a new `6. Deployment (Google Cloud Run)` section to `AGENTS.md`.
+- **Documentation**: Added a new `7. Safety & Security` section to `AGENTS.md` detailing HITL authorization, explainability, and credential management.
