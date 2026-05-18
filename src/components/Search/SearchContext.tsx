@@ -61,7 +61,9 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({ children, onNavi
                 setActiveAction({ type: 'OPEN_DRAWER', payload: action.payload });
                 break;
             case 'HIGHLIGHT_MAP':
-                setHighlightedNodeId(action.payload);
+                if (typeof action.payload === 'string') {
+                    setHighlightedNodeId(action.payload);
+                }
                 break;
             default:
                 console.warn('Unknown action type:', action.type);

@@ -105,3 +105,13 @@ This document logs the major changes and features added to the **Field Operation
 - **Documentation**: Created `AGENTS.md` following the Gemini file guide standard for AI agents.
 - **Documentation**: Added a new `6. Deployment (Google Cloud Run)` section to `AGENTS.md`.
 - **Documentation**: Added a new `7. Safety & Security` section to `AGENTS.md` detailing HITL authorization, explainability, and credential management.
+
+## [2026-05-08] - GitLab Repository Sync
+- **Repository**: Safely fetched latest upstream codebase from GitLab `origin/main` remote.
+- **Backup**: Automatically archived all local modifications, deletions, and untracked files into a new backup branch `local-backup-2026-05-08` before the sync.
+- **Sync**: Reset local `main` branch to match remote GitLab state exactly, achieving a clean working directory status.
+
+## [2026-05-17] - Skill Integration
+- **Feature**: Installed the specialized `goldfish-antagonistic-review` skill locally.
+- **Feature**: Installed the specialized `goldfish-review-loop` skill locally.
+- **Feature**: Installed the specialized `goldfish-resolve-review` skill locally.

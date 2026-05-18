@@ -1,6 +1,6 @@
 // src/features/topology/components/GeographicTopologyView.tsx
 import React, { useRef, useEffect } from 'react';
-import { Wrapper, Status } from '@googlemaps/react-wrapper';
+import { Wrapper } from '@googlemaps/react-wrapper';
 import { PipelineNode, ScadaData } from '../../../types'; // Correct relative path
 
 interface GeographicTopologyViewProps {
@@ -13,7 +13,7 @@ interface CustomOverlayView extends google.maps.OverlayView {
     canvas?: HTMLCanvasElement;
 }
 
-const MapComponent: React.FC<GeographicTopologyViewProps> = ({ nodes, alerts }) => {
+const MapComponent: React.FC<GeographicTopologyViewProps> = () => {
     const ref = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -196,7 +196,7 @@ const GeographicTopologyView: React.FC<GeographicTopologyViewProps> = (props) =>
     }
 
     return (
-        <Wrapper apiKey={apiKey} status={Status.LOADING}>
+        <Wrapper apiKey={apiKey}>
             <MapComponent {...props} />
         </Wrapper>
     );
