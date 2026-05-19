@@ -30,6 +30,8 @@ For human-centric context, read `README.md`.
 - **Module Exports**: Use named exports exclusively across all React components and utility files.
 - **Safety Guardrails**: Never bypass or mock human-in-the-loop (HITL) PIN verification challenges when handling high-severity SCADA triage operations.
 - **UI/Styling**: Adhere strictly to the industrial dark theme (`#0D0D0D`) using predefined Tailwind CSS utility classes.
+- **Version Control**: Push exclusively to GitHub (`origin` remote: `https://github.com/aprasanna13/asset-velocity`). Never configure or push changes to GitLab.
+
 
 ## 6. Deployment (Google Cloud Run)
 - **Container Registry**: Artifact Registry (`us-central1-docker.pkg.dev/pr-tftest/asset-vol-repo/assetvol:latest`)
