@@ -1,0 +1,1468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Design Document: Global Search Subsystem</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-primary: #0D0D0D;
+      --bg-secondary: #141414;
+      --bg-tertiary: #1E1E1E;
+      --border-color: #2A2A2A;
+      
+      --accent-cyan: #00F0FF;
+      --accent-purple: #B480FF;
+      --accent-orange: #FF7A00;
+      --accent-green: #00FF66;
+      
+      --text-primary: #FFFFFF;
+      --text-secondary: #A0A0A0;
+      --text-muted: #606060;
+      
+      --shadow-premium: 0 20px 40px -15px rgba(0, 240, 255, 0.07);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: 'Inter', -apple-system, sans-serif;
+      line-height: 1.6;
+      scroll-behavior: smooth;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Premium Layout structure */
+    .layout {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      min-height: 100vh;
+    }
+
+    /* Sidebar/Navigation */
+    aside {
+      background-color: var(--bg-secondary);
+      border-right: 1px solid var(--border-color);
+      padding: 2.5rem 1.5rem;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 3rem;
+    }
+
+    .brand-logo {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 1.2rem;
+      color: var(--bg-primary);
+      font-family: 'Outfit', sans-serif;
+    }
+
+    .brand-name {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 1.1rem;
+      letter-spacing: 0.5px;
+    }
+
+    .nav-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      flex-grow: 1;
+    }
+
+    .nav-item a {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      border: 1px solid transparent;
+    }
+
+    .nav-item a:hover, .nav-item.active a {
+      color: var(--text-primary);
+      background-color: var(--bg-tertiary);
+      border-color: rgba(0, 240, 255, 0.15);
+      transform: translateX(4px);
+    }
+
+    .nav-item.active a {
+      background: linear-gradient(90deg, rgba(0, 240, 255, 0.08) 0%, rgba(180, 128, 255, 0.02) 100%);
+      border-left: 3px solid var(--accent-cyan);
+    }
+
+    .nav-number {
+      font-family: 'Fira Code', monospace;
+      font-size: 0.8rem;
+      color: var(--accent-cyan);
+      opacity: 0.8;
+    }
+
+    .sidebar-footer {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      border-top: 1px solid var(--border-color);
+      padding-top: 1.5rem;
+    }
+
+    /* Main content container */
+    main {
+      padding: 3rem 4rem;
+      max-width: 1200px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    /* Header Dashboard Section */
+    header {
+      margin-bottom: 4rem;
+      position: relative;
+    }
+
+    .meta-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.4rem 1rem;
+      border-radius: 100px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 1.5rem;
+      background-color: rgba(180, 128, 255, 0.1);
+      color: var(--accent-purple);
+      border: 1px solid rgba(180, 128, 255, 0.2);
+    }
+
+    h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 3rem;
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -1px;
+      margin-bottom: 1rem;
+      background: linear-gradient(135deg, var(--text-primary) 30%, #888888 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .description-lead {
+      font-size: 1.15rem;
+      color: var(--text-secondary);
+      max-width: 850px;
+      margin-bottom: 2.5rem;
+    }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.5rem;
+      background-color: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 1.5rem;
+    }
+
+    .dash-card {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .dash-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 600;
+      letter-spacing: 1px;
+    }
+
+    .dash-value {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .dash-value.status-active {
+      color: var(--accent-cyan);
+    }
+
+    .dash-value.status-completed {
+      color: var(--accent-green);
+    }
+
+    /* Premium Section Styling */
+    section {
+      margin-bottom: 5rem;
+      padding-top: 1rem;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 0.75rem;
+    }
+
+    .section-tag {
+      font-family: 'Fira Code', monospace;
+      color: var(--accent-cyan);
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+
+    h2 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.5px;
+    }
+
+    /* Content Typography & Blocks */
+    p {
+      color: var(--text-secondary);
+      margin-bottom: 1.25rem;
+      font-size: 1rem;
+      line-height: 1.7;
+    }
+
+    h3 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin: 2rem 0 1rem 0;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    h3::before {
+      content: '';
+      display: inline-block;
+      width: 4px;
+      height: 1.2rem;
+      background-color: var(--accent-cyan);
+      border-radius: 2px;
+    }
+
+    /* Section 0: Business Problem Grid */
+    .problem-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      margin: 2rem 0;
+    }
+
+    .panel-premium {
+      background-color: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 2rem;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .panel-premium:hover {
+      border-color: rgba(0, 240, 255, 0.25);
+      box-shadow: var(--shadow-premium);
+      transform: translateY(-2px);
+    }
+
+    .panel-premium::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+    }
+
+    .panel-negative::before {
+      background-color: var(--accent-orange);
+    }
+
+    .panel-positive::before {
+      background-color: var(--accent-green);
+    }
+
+    .panel-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .problem-badge {
+      background-color: rgba(255, 122, 0, 0.1);
+      color: var(--accent-orange);
+      font-size: 0.75rem;
+      padding: 0.25rem 0.6rem;
+      border-radius: 4px;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .solution-badge {
+      background-color: rgba(0, 255, 102, 0.1);
+      color: var(--accent-green);
+      font-size: 0.75rem;
+      padding: 0.25rem 0.6rem;
+      border-radius: 4px;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    /* Lists */
+    ul, ol {
+      margin-left: 1.5rem;
+      margin-bottom: 1.5rem;
+      color: var(--text-secondary);
+    }
+
+    li {
+      margin-bottom: 0.5rem;
+      line-height: 1.6;
+    }
+
+    strong {
+      color: var(--text-primary);
+    }
+
+    /* Interactive Tabs for Alternatives (Section 2) */
+    .tabs-container {
+      margin-top: 2rem;
+    }
+
+    .tabs-headers {
+      display: flex;
+      gap: 0.5rem;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .tab-header {
+      padding: 0.75rem 1.25rem;
+      background-color: transparent;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      color: var(--text-secondary);
+      font-family: 'Outfit', sans-serif;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .tab-header:hover {
+      color: var(--text-primary);
+      background-color: var(--bg-secondary);
+    }
+
+    .tab-header.active {
+      color: var(--accent-cyan);
+      background-color: var(--bg-secondary);
+      border-color: var(--border-color);
+      border-bottom-color: var(--bg-secondary);
+      box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .tab-content {
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .pros-cons-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-top: 1.5rem;
+    }
+
+    .pro-card {
+      background-color: rgba(0, 255, 102, 0.03);
+      border: 1px dashed rgba(0, 255, 102, 0.15);
+      border-radius: 8px;
+      padding: 1rem;
+    }
+
+    .con-card {
+      background-color: rgba(255, 122, 0, 0.03);
+      border: 1px dashed rgba(255, 122, 0, 0.15);
+      border-radius: 8px;
+      padding: 1rem;
+    }
+
+    /* Interactive File Checklist (Section 3) */
+    .file-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+      margin: 1.5rem 0;
+    }
+
+    .file-row {
+      display: grid;
+      grid-template-columns: 2.5rem 1fr 120px;
+      align-items: center;
+      background-color: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 0.75rem 1.25rem;
+      transition: border-color 0.2s ease;
+    }
+
+    .file-row:hover {
+      border-color: rgba(0, 240, 255, 0.2);
+    }
+
+    .file-checkbox {
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      border: 2px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .file-checkbox.checked {
+      background-color: var(--accent-green);
+      border-color: var(--accent-green);
+    }
+
+    .file-checkbox.checked::after {
+      content: '✓';
+      color: var(--bg-primary);
+      font-size: 0.8rem;
+      font-weight: 900;
+    }
+
+    .file-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+    }
+
+    .file-name {
+      font-family: 'Fira Code', monospace;
+      font-size: 0.95rem;
+      color: var(--accent-cyan);
+      text-decoration: none;
+    }
+
+    .file-name:hover {
+      text-decoration: underline;
+    }
+
+    .file-desc {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+
+    .file-status-pill {
+      justify-self: end;
+      padding: 0.25rem 0.6rem;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      text-align: center;
+      width: 100px;
+    }
+
+    .file-status-pill.new {
+      background-color: rgba(0, 240, 255, 0.1);
+      color: var(--accent-cyan);
+      border: 1px solid rgba(0, 240, 255, 0.2);
+    }
+
+    .file-status-pill.modify {
+      background-color: rgba(180, 128, 255, 0.1);
+      color: var(--accent-purple);
+      border: 1px solid rgba(180, 128, 255, 0.2);
+    }
+
+    /* Code Display Panels */
+    pre {
+      background-color: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 1.5rem;
+      overflow-x: auto;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.9rem;
+      color: #D4D4D4;
+      margin-bottom: 1.5rem;
+      position: relative;
+    }
+
+    .code-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      border-bottom: none;
+      padding: 0.5rem 1rem;
+      border-top-left-radius: 12px;
+      border-top-right-radius: 12px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+    }
+
+    .code-header + pre {
+      border-top-left-radius: 0;
+      border-top-right-radius: 0;
+    }
+
+    .copy-btn {
+      background-color: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--text-secondary);
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.75rem;
+      transition: all 0.2s ease;
+    }
+
+    .copy-btn:hover {
+      color: var(--text-primary);
+      background-color: var(--bg-tertiary);
+    }
+
+    /* Live Search Sandbox Component (Section 4 Playback) */
+    .sandbox-card {
+      background-color: var(--bg-secondary);
+      border: 2px solid var(--border-color);
+      border-radius: 16px;
+      padding: 2rem;
+      margin-top: 2rem;
+      box-shadow: var(--shadow-premium);
+    }
+
+    .sandbox-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .sandbox-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.3rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--accent-cyan);
+    }
+
+    .sandbox-controls {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .sandbox-select {
+      background-color: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.85rem;
+      outline: none;
+      cursor: pointer;
+      transition: border-color 0.2s ease;
+    }
+
+    .sandbox-select:focus {
+      border-color: var(--accent-cyan);
+    }
+
+    .sandbox-search-wrapper {
+      position: relative;
+      width: 100%;
+      margin-bottom: 1.5rem;
+    }
+
+    .sandbox-input {
+      width: 100%;
+      background-color: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      padding: 1rem 1.25rem 1rem 3rem;
+      border-radius: 12px;
+      font-family: 'Inter', sans-serif;
+      font-size: 1rem;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .sandbox-input:focus {
+      border-color: var(--accent-cyan);
+      box-shadow: 0 0 0 3px rgba(0, 240, 255, 0.15);
+    }
+
+    .sandbox-icon {
+      position: absolute;
+      left: 1.25rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 1.2rem;
+    }
+
+    .sandbox-results {
+      min-height: 150px;
+      background-color: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 1rem;
+      max-height: 350px;
+      overflow-y: auto;
+    }
+
+    .result-group {
+      margin-bottom: 1.25rem;
+    }
+
+    .result-group-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      letter-spacing: 1px;
+      margin-bottom: 0.5rem;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .result-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      background-color: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      margin-bottom: 0.4rem;
+      transition: all 0.2s ease;
+    }
+
+    .result-item:hover {
+      border-color: rgba(0, 240, 255, 0.2);
+      background-color: var(--bg-tertiary);
+    }
+
+    .result-main {
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+    }
+
+    .result-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .result-subtitle {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+
+    .result-action-badge {
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      text-transform: uppercase;
+      font-family: 'Fira Code', monospace;
+    }
+
+    .action-navigate {
+      background-color: rgba(180, 128, 255, 0.1);
+      color: var(--accent-purple);
+      border: 1px solid rgba(180, 128, 255, 0.2);
+    }
+
+    .action-drawer {
+      background-color: rgba(255, 122, 0, 0.1);
+      color: var(--accent-orange);
+      border: 1px solid rgba(255, 122, 0, 0.2);
+    }
+
+    .action-highlight {
+      background-color: rgba(0, 240, 255, 0.1);
+      color: var(--accent-cyan);
+      border: 1px solid rgba(0, 240, 255, 0.2);
+    }
+
+    .zero-results {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 150px;
+      color: var(--text-muted);
+      gap: 0.5rem;
+    }
+
+    .zero-icon {
+      font-size: 2rem;
+    }
+
+    /* Mermaid CSS visualization of system flow */
+    .diagram-container {
+      background-color: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 2rem;
+      margin: 2rem 0;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    .flow-chart {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
+      padding: 1rem 0;
+    }
+
+    .flow-node {
+      background-color: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 1.25rem;
+      width: 220px;
+      text-align: center;
+      transition: all 0.3s ease;
+      z-index: 2;
+    }
+
+    .flow-node:hover {
+      border-color: var(--accent-cyan);
+      box-shadow: 0 0 15px rgba(0, 240, 255, 0.1);
+      transform: translateY(-2px);
+    }
+
+    .flow-node-title {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 0.95rem;
+      margin-bottom: 0.5rem;
+      color: var(--accent-cyan);
+    }
+
+    .flow-node-desc {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+
+    .flow-connector {
+      flex-grow: 1;
+      height: 2px;
+      background-color: var(--border-color);
+      position: relative;
+      margin: 0 -10px;
+      z-index: 1;
+    }
+
+    .flow-connector::after {
+      content: '➔';
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-52%);
+      color: var(--border-color);
+      font-size: 1rem;
+    }
+
+    .flow-connector.active-connector {
+      background-color: var(--accent-cyan);
+    }
+
+    .flow-connector.active-connector::after {
+      color: var(--accent-cyan);
+    }
+
+    /* Responsive styles */
+    @media (max-width: 1024px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+      aside {
+        display: none;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .problem-grid, .pros-cons-grid {
+        grid-template-columns: 1fr;
+      }
+      .flow-chart {
+        flex-direction: column;
+        gap: 2rem;
+      }
+      .flow-connector {
+        width: 2px;
+        height: 40px;
+      }
+      .flow-connector::after {
+        content: '▼';
+        right: auto;
+        left: 50%;
+        transform: translateX(-50%);
+        top: auto;
+        bottom: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="layout">
+    <!-- Interactive Navigation Sidebar -->
+    <aside>
+      <div>
+        <div class="brand">
+          <div class="brand-logo">G</div>
+          <div class="brand-name">Asset Velocity</div>
+        </div>
+        
+        <ul class="nav-list">
+          <li class="nav-item active" data-target="overview">
+            <a href="#overview">
+              <span class="nav-number">00</span>
+              Overview
+            </a>
+          </li>
+          <li class="nav-item" data-target="problem">
+            <a href="#problem">
+              <span class="nav-number">01</span>
+              Business Problem
+            </a>
+          </li>
+          <li class="nav-item" data-target="architecture">
+            <a href="#architecture">
+              <span class="nav-number">02</span>
+              Architecture Flow
+            </a>
+          </li>
+          <li class="nav-item" data-target="alternatives">
+            <a href="#alternatives">
+              <span class="nav-number">03</span>
+              Alternatives
+            </a>
+          </li>
+          <li class="nav-item" data-target="checklist">
+            <a href="#checklist">
+              <span class="nav-number">04</span>
+              Files Checklist
+            </a>
+          </li>
+          <li class="nav-item" data-target="details">
+            <a href="#details">
+              <span class="nav-number">05</span>
+              Agreed Details
+            </a>
+          </li>
+          <li class="nav-item" data-target="sandbox">
+            <a href="#sandbox">
+              <span class="nav-number">06</span>
+              Fuzzy Sandbox
+            </a>
+          </li>
+        </ul>
+      </div>
+      
+      <div class="sidebar-footer">
+        Field Operations Spec Sheet v1.2.0<br>
+        Rendered statically as HTML
+      </div>
+    </aside>
+
+    <!-- Main Specification Content -->
+    <main>
+      <!-- Dashboard Header -->
+      <header id="overview">
+        <div class="meta-badge">Change Request • Global Search</div>
+        <h1>Design Document:<br>Global Search Subsystem</h1>
+        <p class="description-lead">
+          A unified context-aware navigation and query overlay optimized for pipeline operators. Prioritizes asset lookups in real-time without breaking situational awareness in high-stress triage environments.
+        </p>
+        
+        <!-- Status and Metadata Dashboard -->
+        <div class="dashboard-grid">
+          <div class="dash-card">
+            <span class="dash-label">Status</span>
+            <span class="dash-value status-completed">Verified & Clean</span>
+          </div>
+          <div class="dash-card">
+            <span class="dash-label">Target Version</span>
+            <span class="dash-value">v1.4.0 Release</span>
+          </div>
+          <div class="dash-card">
+            <span class="dash-label">Tech Stack</span>
+            <span class="dash-value">React 18 • Fuse.js</span>
+          </div>
+          <div class="dash-card">
+            <span class="dash-label">Dependencies</span>
+            <span class="dash-value">None (Statically Shared)</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Section 0: Business Problem -->
+      <section id="problem">
+        <div class="section-header">
+          <span class="section-tag">01 // PROBLEM & SOLUTION</span>
+          <h2>The Business Problem</h2>
+        </div>
+        
+        <p>
+          The Field Operations application serves operators managing complex, high-stakes industrial environments (such as pipeline networks and SCADA telemetry). These operators are responsible for monitoring live data, responding to critical anomalies, and executing maintenance workflows.
+        </p>
+        
+        <div class="problem-grid">
+          <!-- Problem Panel -->
+          <div class="panel-premium panel-negative">
+            <div class="panel-title">
+              <span>The Friction</span>
+              <span class="problem-badge">Cognitive Load</span>
+            </div>
+            <p>
+              As system complexity grows, information becomes siloed across specialized views (Network Map, Parts Tables, Execution Console). Navigating away from SCADA triage to search for a part forces split-second context loss, which can be dangerous in industrial operations.
+            </p>
+          </div>
+          
+          <!-- Solution Panel -->
+          <div class="panel-premium panel-positive">
+            <div class="panel-title">
+              <span>The Solution</span>
+              <span class="problem-badge solution-badge">Unified Overlay</span>
+            </div>
+            <p>
+              A context-aware global search bar in the application header. By dynamically prioritizing matches based on the active screen, and opening results in non-disruptive overlay drawers or map highlights, operators retain full situational awareness.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 1: System Architecture Flow -->
+      <section id="architecture">
+        <div class="section-header">
+          <span class="section-tag">02 // COMPONENT MAP</span>
+          <h2>Architecture & Component Flow</h2>
+        </div>
+        
+        <p>
+          The global search feature acts as an elegant, low-risk "lens" over the existing application. It reads data flowing through the app and presents it in a unified, debounced results overlay without modifying core SCADA telemetry workflows.
+        </p>
+
+        <!-- Interactive System Flow Visualizer -->
+        <div class="diagram-container">
+          <div class="flow-chart">
+            <div class="flow-node">
+              <div class="flow-node-title">1. SearchBar UI</div>
+              <div class="flow-node-desc">Dropdown component inside App header. Captures keyboard shortcuts (Ctrl+K) and debounces inputs.</div>
+            </div>
+            <div class="flow-connector active-connector"></div>
+            <div class="flow-node">
+              <div class="flow-node-title">2. Search Brain (useSearch)</div>
+              <div class="flow-node-desc">React hook managing search queries, active context filters, ranking, and race conditions.</div>
+            </div>
+            <div class="flow-connector active-connector"></div>
+            <div class="flow-node">
+              <div class="flow-node-title">3. Data Connectors</div>
+              <div class="flow-node-desc">Modular adapters querying Logs, Parts, and Network Nodes via fuzzy text indexing.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 2: Alternatives Considered -->
+      <section id="alternatives">
+        <div class="section-header">
+          <span class="section-tag">03 // EVALUATION MATRICES</span>
+          <h2>Alternatives Considered</h2>
+        </div>
+        
+        <p>
+          During the design phase, we evaluated multiple implementation strategies to balance complexity, performance, and developer velocity:
+        </p>
+
+        <!-- Tabbed Component for Alternatives -->
+        <div class="tabs-container">
+          <div class="tabs-headers">
+            <button class="tab-header active" onclick="switchTab(event, 'alt-1')">1. All-In-One Search</button>
+            <button class="tab-header" onclick="switchTab(event, 'alt-2')">2. Tab-Specific Querying</button>
+            <button class="tab-header" onclick="switchTab(event, 'alt-3')">3. Heavy Search Libraries</button>
+          </div>
+
+          <!-- Alternative 1 -->
+          <div id="alt-1" class="tab-content active">
+            <h3>The "All-in-One" Monolithic Function</h3>
+            <p>
+              Consolidate all searching instructions for logs, parts, and nodes into a single giant search handler block.
+            </p>
+            <div class="pros-cons-grid">
+              <div class="pro-card">
+                <strong>✓ Quick Start:</strong> Extremely easy to implement initially. Minimum file boilerplate.
+              </div>
+              <div class="con-card">
+                <strong>✗ Poor Scalability:</strong> Adding a new domain in the future requires rewriting core logic, increasing the risk of introducing regressions.
+              </div>
+            </div>
+          </div>
+
+          <!-- Alternative 2 -->
+          <div id="alt-2" class="tab-content">
+            <h3>Screen-Specific Search Boxes Only</h3>
+            <p>
+              Isolate search capabilities inside separate panels. An operator can only search logs on the Execution Console tab, and parts on the Inventory tab.
+            </p>
+            <div class="pros-cons-grid">
+              <div class="pro-card">
+                <strong>✓ Absolute Isolation:</strong> Zero component coupling. Each component manages its own data cleanly.
+              </div>
+              <div class="con-card">
+                <strong>✗ Multi-click Friction:</strong> Operators must click away to a completely new screen just to execute a search, failing to preserve live context.
+              </div>
+            </div>
+          </div>
+
+          <!-- Alternative 3 -->
+          <div id="alt-3" class="tab-content">
+            <h3>Heavy External Search Servers</h3>
+            <p>
+              Leverage elastic-level databases or heavy external frameworks to index the datasets.
+            </p>
+            <div class="pros-cons-grid">
+              <div class="pro-card">
+                <strong>✓ Future Proofing:</strong> Handles millions of datasets easily with pre-computed index caching.
+              </div>
+              <div class="con-card">
+                <strong>✗ Unnecessary Bloat:</strong> Our client-side telemetry buffer operates on ~100 items, meaning simple in-memory Fuse.js search runs sub-millisecond.
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 3: Files Checklist -->
+      <section id="checklist">
+        <div class="section-header">
+          <span class="section-tag">04 // FILE COMPONENT LOG</span>
+          <h2>Implementation Files Checklist</h2>
+        </div>
+        
+        <p>
+          To implement this subsystem, we created **5 new files** and safely integrated them by modifying **3 existing files**:
+        </p>
+
+        <div class="file-grid">
+          <!-- New Files -->
+          <div class="file-row">
+            <div class="file-checkbox checked"></div>
+            <div class="file-info">
+              <a class="file-name" href="file:///usr/local/google/home/prasannaankem/Code/Field Operations/src/components/Search/SearchBar.tsx">SearchBar.tsx</a>
+              <span class="file-desc">Frontend header search box. Groups category results and handles key listeners (Ctrl+K).</span>
+            </div>
+            <div class="file-status-pill new">New File</div>
+          </div>
+
+          <div class="file-row">
+            <div class="file-checkbox checked"></div>
+            <div class="file-info">
+              <a class="file-name" href="file:///usr/local/google/home/prasannaankem/Code/Field Operations/src/components/Search/useSearch.ts">useSearch.ts</a>
+              <span class="file-desc">Unified React hook coordinating context prioritizations, debounce timers, and category adapters.</span>
+            </div>
+            <div class="file-status-pill new">New File</div>
+          </div>
+
+          <div class="file-row">
+            <div class="file-checkbox checked"></div>
+            <div class="file-info">
+              <a class="file-name" href="file:///usr/local/google/home/prasannaankem/Code/Field Operations/src/components/Search/SearchContext.tsx">SearchContext.tsx</a>
+              <span class="file-desc">React context provider sharing highlighting, modal drawers, and active search query states globally.</span>
+            </div>
+            <div class="file-status-pill new">New File</div>
+          </div>
+
+          <div class="file-row">
+            <div class="file-checkbox checked"></div>
+            <div class="file-info">
+              <a class="file-name" href="file:///usr/local/google/home/prasannaankem/Code/Field Operations/src/components/Search/adapters/inventoryAdapter.ts">inventoryAdapter.ts</a>
+              <span class="file-desc">Fuzzy adapters targeting parts SKU numbers, description text, and warehouse locations.</span>
+            </div>
+            <div class="file-status-pill new">New File</div>
+          </div>
+
+          <div class="file-row">
+            <div class="file-checkbox checked"></div>
+            <div class="file-info">
+              <a class="file-name" href="file:///usr/local/google/home/prasannaankem/Code/Field Operations/src/components/Search/adapters/logAdapter.ts">logAdapter.ts</a>
+              <span class="file-desc">Debounced adapter indexing telemetry alerts, execution anomalies, and timestamps.</span>
+            </div>
+            <div class="file-status-pill new">New File</div>
+          </div>
+
+          <div class="file-row">
+            <div class="file-checkbox checked"></div>
+            <div class="file-info">
+              <a class="file-name" href="file:///usr/local/google/home/prasannaankem/Code/Field Operations/src/components/Search/adapters/nodeAdapter.ts">nodeAdapter.ts</a>
+              <span class="file-desc">Fuzzy search mapping for pipeline valve identifiers, pressures, and active flow states.</span>
+            </div>
+            <div class="file-status-pill new">New File</div>
+          </div>
+
+          <!-- Modified Files -->
+          <div class="file-row">
+            <div class="file-checkbox checked"></div>
+            <div class="file-info">
+              <a class="file-name" href="file:///usr/local/google/home/prasannaankem/Code/Field Operations/src/App.tsx">App.tsx</a>
+              <span class="file-desc">Modified to integrate the global search bar in header and wire shared context status.</span>
+            </div>
+            <div class="file-status-pill modify">Modified</div>
+          </div>
+
+          <div class="file-row">
+            <div class="file-checkbox checked"></div>
+            <div class="file-info">
+              <a class="file-name" href="file:///usr/local/google/home/prasannaankem/Code/Field Operations/src/types.ts">types.ts</a>
+              <span class="file-desc">Statically typed search interfaces (SearchResult, SearchActionType) in full compliance with strict mode.</span>
+            </div>
+            <div class="file-status-pill modify">Modified</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 4: Agreed Implementation Details & Code -->
+      <section id="details">
+        <div class="section-header">
+          <span class="section-tag">05 // TECHNICAL SPECS & TYPES</span>
+          <h2>Agreed Implementation Details</h2>
+        </div>
+        
+        <p>
+          The following types and configurations were strictly defined to keep all components in complete alignment:
+        </p>
+
+        <div class="code-header">
+          <span>src/types.ts</span>
+          <button class="copy-btn" onclick="copyCode('types-code')">Copy Snippet</button>
+        </div>
+        <pre id="types-code">
+export interface SearchResult {
+  id: string;
+  title: string;
+  subtitle?: string;
+  type: 'log' | 'part' | 'node';
+  action: {
+    type: 'NAVIGATE' | 'OPEN_DRAWER' | 'HIGHLIGHT_MAP';
+    payload: any; 
+  };
+}</pre>
+
+        <p>
+          Results trigger specific application actions:
+        </p>
+        <ul>
+          <li><strong>NAVIGATE:</strong> Transitions active tabs (e.g. opens Inventory Screen).</li>
+          <li><strong>OPEN_DRAWER:</strong> Toggles slide-over maintenance drawer with detailed telemetry history.</li>
+          <li><strong>HIGHLIGHT_MAP:</strong> Recenters and flashes the target pipeline valve on the Topology map.</li>
+        </ul>
+      </section>
+
+      <!-- Section 5: Live Fuzzy Sandbox (INSPIRATION PLAYGROUND!) -->
+      <section id="sandbox">
+        <div class="section-header">
+          <span class="section-tag">06 // INTERACTIVE DECK</span>
+          <h2>Fuzzy Search Sandbox</h2>
+        </div>
+        
+        <p>
+          Experiment with the live fuzzy search ranking rules below. Select your current screen context and type a search term. 
+          Observe how the sandbox automatically prioritizes results matching the current screen and groups categories correctly!
+        </p>
+
+        <!-- Live Mock Simulator -->
+        <div class="sandbox-card">
+          <div class="sandbox-header">
+            <div class="sandbox-title">
+              <span>Search Simulator</span>
+            </div>
+            <div class="sandbox-controls">
+              <span style="font-size: 0.8rem; color: var(--text-secondary)">Active Screen Context:</span>
+              <select class="sandbox-select" id="screen-context" onchange="runFuzzySearch()">
+                <option value="node">SCADA Triage (Nodes First)</option>
+                <option value="part">Inventory Screen (Parts First)</option>
+                <option value="log">Execution Console (Logs First)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="sandbox-search-wrapper">
+            <span class="sandbox-icon">🔍</span>
+            <input 
+              type="text" 
+              class="sandbox-input" 
+              id="search-query" 
+              placeholder="Type to filter... (e.g., valve, alert, tube, flow, pressure)" 
+              oninput="runFuzzySearch()"
+            >
+          </div>
+
+          <div class="sandbox-results" id="sandbox-results-panel">
+            <!-- Dynamic entries will be rendered here -->
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Live Sandbox Logic -->
+  <script>
+    // Statically stored search index
+    const mockDatabase = [
+      { id: 'N1', title: 'Main Pressure Valve NV-201', subtitle: 'Active Flow State • 105 PSI', type: 'node', action: 'HIGHLIGHT_MAP' },
+      { id: 'N2', title: 'Compressor Bypass Bypass-A', subtitle: 'Operational state: Idle', type: 'node', action: 'HIGHLIGHT_MAP' },
+      { id: 'N3', title: 'Intake Flow Meter FM-109', subtitle: 'Flow rate telemetry normal', type: 'node', action: 'HIGHLIGHT_MAP' },
+      
+      { id: 'P1', title: 'High-Grade Pressure Gauge PG-100', subtitle: 'SKU: G-493281 • Wh: Central', type: 'part', action: 'OPEN_DRAWER' },
+      { id: 'P2', title: 'Buna-N O-Ring Replacement Seal', subtitle: 'SKU: S-102943 • Wh: West-Grid', type: 'part', action: 'OPEN_DRAWER' },
+      { id: 'P3', title: 'Steel Flange Connector 8-inch', subtitle: 'SKU: C-029348 • Wh: Eastern-Store', type: 'part', action: 'OPEN_DRAWER' },
+      
+      { id: 'L1', title: 'Anomaly Detected: Pressure Spike NV-201', subtitle: '05-19 01:12:43 • Severe Alert', type: 'log', action: 'NAVIGATE' },
+      { id: 'L2', title: 'Maintenance Scheduled: Valve Cleaning Bypass-A', subtitle: '05-19 01:08:12 • Logged Task', type: 'log', action: 'NAVIGATE' },
+      { id: 'L3', title: 'Telemetry Connection Restored', subtitle: '05-19 00:45:19 • System info', type: 'log', action: 'NAVIGATE' }
+    ];
+
+    // Switch tab logic
+    function switchTab(event, tabId) {
+      // Remove active class from header buttons
+      const headers = document.querySelectorAll('.tab-header');
+      headers.forEach(btn => btn.classList.remove('active'));
+      
+      // Add active class to selected header
+      event.currentTarget.classList.add('active');
+      
+      // Remove active class from content sections
+      const contents = document.querySelectorAll('.tab-content');
+      contents.forEach(panel => panel.classList.remove('active'));
+      
+      // Add active class to targeted content panel
+      document.getElementById(tabId).classList.add('active');
+    }
+
+    // Copy code helper
+    function copyCode(elementId) {
+      const text = document.getElementById(elementId).innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = document.querySelector(`button[onclick*="${elementId}"]`);
+        const originalText = btn.innerText;
+        btn.innerText = 'Copied!';
+        btn.style.color = 'var(--accent-green)';
+        btn.style.borderColor = 'var(--accent-green)';
+        setTimeout(() => {
+          btn.innerText = originalText;
+          btn.style.color = 'var(--text-secondary)';
+          btn.style.borderColor = 'var(--border-color)';
+        }, 1500);
+      });
+    }
+
+    // Live Sandbox Search Algorithm
+    function runFuzzySearch() {
+      const query = document.getElementById('search-query').value.trim().toLowerCase();
+      const currentContext = document.getElementById('screen-context').value;
+      const panel = document.getElementById('sandbox-results-panel');
+      
+      // If query is empty, show instructions
+      if (!query) {
+        panel.innerHTML = `
+          <div class="zero-results">
+            <div class="zero-icon">🔍</div>
+            <div>Type a term in the query box to test results classification.</div>
+            <div style="font-size: 0.8rem; opacity: 0.6;">Try "valve", "alert", "sku", "FM-109"</div>
+          </div>
+        `;
+        return;
+      }
+
+      // Simple text filtering
+      let matches = mockDatabase.filter(item => {
+        return item.title.toLowerCase().includes(query) || 
+               item.subtitle.toLowerCase().includes(query) || 
+               item.type.toLowerCase().includes(query);
+      });
+
+      // Context aware sorting: Prioritize items matching active screen context
+      matches.sort((a, b) => {
+        if (a.type === currentContext && b.type !== currentContext) return -1;
+        if (a.type !== currentContext && b.type === currentContext) return 1;
+        return 0; // Keep default ordering otherwise
+      });
+
+      // Group matches by category
+      const groups = { node: [], part: [], log: [] };
+      matches.forEach(item => groups[item.type].push(item));
+
+      // Render dynamically
+      let html = '';
+      let hasMatches = false;
+
+      const categories = [
+        { type: 'node', label: 'Network Nodes (SCADA Topology)' },
+        { type: 'part', label: 'Inventory Parts (Warehouse Store)' },
+        { type: 'log', label: 'Execution Logs (Event Buffer)' }
+      ];
+
+      categories.forEach(category => {
+        const items = groups[category.type];
+        if (items.length > 0) {
+          hasMatches = true;
+          const isContextPrioritized = category.type === currentContext;
+          const prioritizedTag = isContextPrioritized 
+            ? '<span style="color: var(--accent-cyan); font-size: 0.7rem; text-transform: uppercase;">★ Current Screen Prioritized</span>' 
+            : '';
+            
+          html += `
+            <div class="result-group">
+              <div class="result-group-title">
+                <span>${category.label}</span>
+                ${prioritizedTag}
+              </div>
+          `;
+          
+          items.forEach(item => {
+            let actionClass = 'action-navigate';
+            if (item.action === 'OPEN_DRAWER') actionClass = 'action-drawer';
+            if (item.action === 'HIGHLIGHT_MAP') actionClass = 'action-highlight';
+            
+            html += `
+              <div class="result-item">
+                <div class="result-main">
+                  <div class="result-title">${item.title}</div>
+                  <div class="result-subtitle">${item.subtitle}</div>
+                </div>
+                <div class="result-action-badge ${actionClass}">${item.action}</div>
+              </div>
+            `;
+          });
+          
+          html += `</div>`;
+        }
+      });
+
+      if (!hasMatches) {
+        panel.innerHTML = `
+          <div class="zero-results">
+            <div class="zero-icon">⚠️</div>
+            <div>No matching items found for "${query}"</div>
+            <div style="font-size: 0.8rem; opacity: 0.6;">Verify spelling or try an alternate query term.</div>
+          </div>
+        `;
+      } else {
+        panel.innerHTML = html;
+      }
+    }
+
+    // Checklist interactive logic
+    document.querySelectorAll('.file-checkbox').forEach(box => {
+      box.addEventListener('click', () => {
+        box.classList.toggle('checked');
+      });
+    });
+
+    // Run initial search once page loads
+    runFuzzySearch();
+
+    // Dynamic sidebar highlighting on scroll
+    window.addEventListener('scroll', () => {
+      const sections = ['overview', 'problem', 'architecture', 'alternatives', 'checklist', 'details', 'sandbox'];
+      let activeSection = 'overview';
+      
+      for (const section of sections) {
+        const el = document.getElementById(section);
+        if (el) {
+          const rect = el.getBoundingClientRect();
+          if (rect.top <= 150) {
+            activeSection = section;
+          }
+        }
+      }
+      
+      document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.remove('active');
+        if (item.getAttribute('data-target') === activeSection) {
+          item.classList.add('active');
+        }
+      });
+    });
+  </script>
+</body>
+</html>

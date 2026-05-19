@@ -44,9 +44,9 @@ const INITIAL_SCADA_STREAM: ScadaData[] = [
 ];
 
 const INITIAL_PIPELINE_NODES: PipelineNode[] = [
-    { id: "COMP-TX-VALLEY-01", name: "NODE 01", current: 100, max: 120, role: "Primary", status: "Active" },
-    { id: "COMP-TX-VALLEY-02", name: "NODE 02", current: 100, max: 125, role: "Backup", status: "Active" },
-    { id: "COMP-TX-VALLEY-03", name: "NODE 03", current: 100, max: 125, role: "Backup", status: "Active" }
+    { id: "COMP-TX-VALLEY-01", name: "NODE 01", current: 100, max: 120, role: "Primary", status: "Active", lat: 31.9973, lng: -102.0779 },
+    { id: "COMP-TX-VALLEY-02", name: "NODE 02", current: 100, max: 125, role: "Backup", status: "Active", lat: 31.8457, lng: -102.3677 },
+    { id: "COMP-TX-VALLEY-03", name: "NODE 03", current: 100, max: 125, role: "Backup", status: "Active", lat: 31.4638, lng: -100.4370 }
 ];
 
 
